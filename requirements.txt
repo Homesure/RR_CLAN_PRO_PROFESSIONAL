@@ -5,3 +5,4 @@ Werkzeug==3.0.3
 razorpay
 python-dotenv
 xhtml2pdf
+gunicorn
