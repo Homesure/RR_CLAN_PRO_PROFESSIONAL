@@ -1,0 +1,374 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="admin-clean-header">
+    <p class="hero-tag">RR CLAN PRO ADMIN</p>
+    <h1>Revenue & Operations Dashboard</h1>
+    <p>Track bookings, technicians, payments, revenue, customers and referrals.</p>
+</section>
+
+<section class="admin-clean-section">
+
+    {% set paid_bookings = bookings|selectattr("payment_status","equalto","Paid")|list %}
+    {% set unpaid_bookings = bookings|rejectattr("payment_status","equalto","Paid")|list %}
+    {% set completed_bookings = bookings|selectattr("status","equalto","Completed")|list %}
+    {% set pending_bookings = bookings|selectattr("status","equalto","Pending")|list %}
+    {% set assigned_bookings = bookings|selectattr("status","equalto","Assigned")|list %}
+    {% set accepted_bookings = bookings|selectattr("status","equalto","Accepted")|list %}
+    {% set rejected_bookings = bookings|selectattr("status","equalto","Rejected")|list %}
+    {% set online_paid = paid_bookings|selectattr("payment_method","equalto","Online Payment")|list %}
+    {% set cash_paid = paid_bookings|selectattr("payment_method","equalto","Cash After Service")|list %}
+
+    <div class="admin-clean-stats">
+
+        <div>
+            <span>Total Bookings</span>
+            <h2>{{ bookings|length }}</h2>
+        </div>
+
+        <div>
+            <span>Completed Jobs</span>
+            <h2>{{ completed_bookings|length }}</h2>
+        </div>
+
+        <div>
+            <span>Paid Revenue</span>
+            <h2>₹{{ paid_bookings|sum(attribute="total_amount") }}</h2>
+        </div>
+
+        <div>
+            <span>Pending Payments</span>
+            <h2>₹{{ unpaid_bookings|sum(attribute="total_amount") }}</h2>
+        </div>
+
+    </div>
+
+    <div class="admin-clean-stats revenue-grid">
+
+        <div>
+            <span>Expected Revenue</span>
+            <h2>₹{{ bookings|sum(attribute="total_amount") }}</h2>
+        </div>
+
+        <div>
+            <span>Online Revenue</span>
+            <h2>₹{{ online_paid|sum(attribute="total_amount") }}</h2>
+        </div>
+
+        <div>
+            <span>Cash Revenue</span>
+            <h2>₹{{ cash_paid|sum(attribute="total_amount") }}</h2>
+        </div>
+
+        <div>
+            <span>Unpaid Orders</span>
+            <h2>{{ unpaid_bookings|length }}</h2>
+        </div>
+
+    </div>
+
+    <div class="admin-clean-stats revenue-grid">
+
+        <div>
+            <span>Total Customers</span>
+            <h2>{{ customers_count or 0 }}</h2>
+        </div>
+
+        <div>
+            <span>Total Technicians</span>
+            <h2>{{ technicians|length }}</h2>
+        </div>
+
+        <div>
+            <span>Referral Customers</span>
+            <h2>{{ referral_customers or 0 }}</h2>
+        </div>
+
+        <div>
+            <span>Repeat Customers</span>
+            <h2>{{ repeat_customers or 0 }}</h2>
+        </div>
+
+    </div>
+
+    <div class="admin-clean-stats revenue-grid">
+
+        <div>
+            <span>Pending Jobs</span>
+            <h2>{{ pending_bookings|length }}</h2>
+        </div>
+
+        <div>
+            <span>Assigned Jobs</span>
+            <h2>{{ assigned_bookings|length }}</h2>
+        </div>
+
+        <div>
+            <span>Accepted Jobs</span>
+            <h2>{{ accepted_bookings|length }}</h2>
+        </div>
+
+        <div>
+            <span>Rejected Jobs</span>
+            <h2>{{ rejected_bookings|length }}</h2>
+        </div>
+
+    </div>
+
+    <div class="admin-control-bar">
+
+        <input
+            type="text"
+            id="bookingSearch"
+            placeholder="Search customer, phone, service, payment..."
+        >
+
+        <select id="statusFilter">
+            <option value="all">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Accepted">Accepted</option>
+            <option value="Completed">Completed</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+
+        <select id="paymentFilter">
+            <option value="all">All Payments</option>
+            <option value="Paid">Paid</option>
+            <option value="Unpaid">Unpaid</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+        </select>
+
+        <a href="{{ url_for('admin_data') }}" class="small-btn">
+            Data Center
+        </a>
+        <a href="{{ url_for('admin_support') }}" class="small-btn">
+    Support Center
+</a>
+
+    </div>
+
+    <div class="admin-table-box">
+
+        <table class="admin-booking-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Technician</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for booking in bookings %}
+
+            <tr
+                class="booking-row"
+                data-status="{{ booking.status }}"
+                data-payment="{{ booking.payment_status }}"
+                data-search="{{ booking.customer_name }} {{ booking.phone }} {{ booking.service.name }} {{ booking.payment_status }} {{ booking.payment_method }}"
+            >
+
+                <td>#RRCP-{{ booking.id }}</td>
+
+                <td>
+                    <strong>{{ booking.customer_name }}</strong><br>
+                    {{ booking.phone }}<br>
+                    <small>{{ booking.booking_date }} • {{ booking.booking_time }}</small>
+                </td>
+
+                <td>
+                    <strong>{{ booking.service.name }}</strong><br>
+
+                    {% if booking.total_amount %}
+                        ₹{{ booking.total_amount }}
+                    {% else %}
+                        ₹{{ (booking.service.price * 1.18)|round(0) }}
+                    {% endif %}
+
+                    {% if booking.discount and booking.discount > 0 %}
+                        <br><small>Discount: ₹{{ booking.discount }}</small>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <span class="clean-status">
+                        {{ booking.status }}
+                    </span>
+                </td>
+
+                <td>
+                    {% if booking.payment_status == "Paid" %}
+                        <span class="payment-paid">Paid</span>
+                    {% elif booking.payment_status == "Pending" %}
+                        <span class="payment-pending">Pending</span>
+                    {% elif booking.payment_status == "Failed" %}
+                        <span class="payment-failed">Failed</span>
+                    {% else %}
+                        <span class="payment-unpaid">Unpaid</span>
+                    {% endif %}
+
+                    <br>
+
+                    <small>{{ booking.payment_method or "Cash After Service" }}</small>
+
+                    {% if booking.razorpay_payment_id %}
+                        <br><small>RZP: {{ booking.razorpay_payment_id }}</small>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if booking.technician %}
+                        {{ booking.technician.name }}
+
+                        {% if not booking.notification_read %}
+                            🔔
+                        {% endif %}
+                    {% else %}
+                        Not Assigned
+                    {% endif %}
+                </td>
+
+                <td>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('assign_booking', booking_id=booking.id) }}"
+                    >
+
+                        <select name="technician_id" required>
+                            <option value="">Select Technician</option>
+
+                            {% for tech in technicians %}
+                            <option value="{{ tech.id }}">
+                                {{ tech.name }}{% if tech.skill %} - {{ tech.skill }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <button type="submit">
+                            Assign
+                        </button>
+
+                    </form>
+
+                    <br>
+
+                    {% if booking.payment_status != "Paid" %}
+                    <form
+                        method="POST"
+                        action="{{ url_for('mark_payment_received', booking_id=booking.id) }}"
+                    >
+                        <button type="submit" class="payment-btn">
+                            Mark Payment Received
+                        </button>
+                    </form>
+                    {% else %}
+                        <span class="paid-done">Payment Received ✅</span>
+                    {% endif %}
+
+                    <br>
+
+                    <a
+                        class="small-btn"
+                        href="{{ url_for('customer_history', customer_id=booking.customer_id) }}"
+                    >
+                        History
+                    </a>
+
+                    <a
+                        class="small-btn"
+                        href="{{ url_for('download_invoice', booking_id=booking.id) }}"
+                    >
+                        Invoice
+                    </a>
+
+                    <a
+                        class="small-btn whatsapp-btn"
+                        target="_blank"
+                        href="https://wa.me/91{{ booking.phone }}?text=Hello%20{{ booking.customer_name }}%2C%20your%20RR%20CLAN%20PRO%20booking%20has%20been%20assigned%20to%20a%20technician.%20Our%20team%20will%20contact%20you%20shortly."
+                    >
+                        Assigned Message
+                    </a>
+
+                    <a
+                        class="small-btn whatsapp-btn"
+                        target="_blank"
+                        href="https://wa.me/91{{ booking.phone }}?text=Hello%20{{ booking.customer_name }}%2C%20we%20have%20successfully%20received%20your%20payment.%20Thank%20you%20for%20choosing%20RR%20CLAN%20PRO."
+                    >
+                        Payment Received
+                    </a>
+
+                    <a
+                        class="small-btn call-btn"
+                        href="tel:{{ booking.phone }}"
+                    >
+                        Call
+                    </a>
+
+                    {% if booking.map_link %}
+                    <a
+                        class="small-btn"
+                        target="_blank"
+                        href="{{ booking.map_link }}"
+                    >
+                        Map
+                    </a>
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<script>
+
+const bookingSearch = document.getElementById("bookingSearch");
+const statusFilter = document.getElementById("statusFilter");
+const paymentFilter = document.getElementById("paymentFilter");
+const rows = document.querySelectorAll(".booking-row");
+
+function applyFilters() {
+    const search = bookingSearch.value.toLowerCase();
+    const status = statusFilter.value;
+    const payment = paymentFilter.value;
+
+    rows.forEach(row => {
+        const text = row.dataset.search.toLowerCase();
+        const rowStatus = row.dataset.status;
+        const rowPayment = row.dataset.payment;
+
+        const searchMatch = text.includes(search);
+        const statusMatch = status === "all" || rowStatus === status;
+        const paymentMatch = payment === "all" || rowPayment === payment;
+
+        row.style.display =
+            searchMatch && statusMatch && paymentMatch
+            ? ""
+            : "none";
+    });
+}
+
+bookingSearch.addEventListener("keyup", applyFilters);
+statusFilter.addEventListener("change", applyFilters);
+paymentFilter.addEventListener("change", applyFilters);
+
+</script>
+
+{% endblock %}

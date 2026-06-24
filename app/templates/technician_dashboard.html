@@ -1,0 +1,365 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="customer-clean-header">
+    <div>
+        <p class="hero-tag">TECHNICIAN DASHBOARD</p>
+        <h1>Welcome, {{ current_user.name }}</h1>
+        <p>Skill: {{ current_user.skill }}</p>
+    </div>
+</section>
+
+<section class="customer-clean-section">
+
+    {% set assigned_jobs = jobs|selectattr("status", "equalto", "Assigned")|list %}
+    {% set accepted_jobs = jobs|selectattr("status", "equalto", "Accepted")|list %}
+    {% set completed_jobs = jobs|selectattr("status", "equalto", "Completed")|list %}
+    {% set paid_jobs = jobs|selectattr("payment_status", "equalto", "Paid")|list %}
+    {% set cash_jobs = jobs|selectattr("payment_method", "equalto", "Cash After Service")|list %}
+    {% set unpaid_jobs = jobs|rejectattr("payment_status", "equalto", "Paid")|list %}
+
+    {% set completed_value = completed_jobs|sum(attribute="total_amount") %}
+    {% set technician_earning = (completed_value * 0.40)|round(0) %}
+    {% set company_profit = (completed_value * 0.60)|round(0) %}
+
+    <div class="admin-clean-stats">
+        <div>
+            <span>Total Jobs</span>
+            <h2>{{ jobs|length }}</h2>
+        </div>
+
+        <div>
+            <span>Assigned</span>
+            <h2>{{ assigned_jobs|length }}</h2>
+        </div>
+
+        <div>
+            <span>Accepted</span>
+            <h2>{{ accepted_jobs|length }}</h2>
+        </div>
+
+        <div>
+            <span>Completed</span>
+            <h2>{{ completed_jobs|length }}</h2>
+        </div>
+    </div>
+
+    <div class="admin-clean-stats revenue-grid">
+        <div>
+            <span>My Earnings</span>
+            <h2>₹{{ technician_earning }}</h2>
+        </div>
+
+        <div>
+            <span>RR CLAN PRO Share</span>
+            <h2>₹{{ company_profit }}</h2>
+        </div>
+
+        <div>
+            <span>Completed Value</span>
+            <h2>₹{{ completed_value }}</h2>
+        </div>
+
+        <div>
+            <span>Avg Per Job</span>
+            <h2>
+                ₹{% if completed_jobs|length > 0 %}
+                    {{ (technician_earning / completed_jobs|length)|round(0) }}
+                {% else %}
+                    0
+                {% endif %}
+            </h2>
+        </div>
+    </div>
+
+    <div class="admin-clean-stats revenue-grid">
+        <div>
+            <span>Estimated Job Value</span>
+            <h2>₹{{ jobs|sum(attribute="total_amount") }}</h2>
+        </div>
+
+        <div>
+            <span>Cash Orders</span>
+            <h2>{{ cash_jobs|length }}</h2>
+        </div>
+
+        <div>
+            <span>Payment Collected</span>
+            <h2>₹{{ paid_jobs|sum(attribute="total_amount") }}</h2>
+        </div>
+
+        <div>
+            <span>Pending Collection</span>
+            <h2>₹{{ unpaid_jobs|sum(attribute="total_amount") }}</h2>
+        </div>
+    </div>
+
+</section>
+
+<section class="customer-clean-section">
+    <div class="section-head">
+        <p class="eyebrow">Job Notifications</p>
+        <h2>Assigned work orders & earnings</h2>
+    </div>
+
+    <div class="admin-control-bar">
+        <input
+            type="text"
+            id="jobSearch"
+            placeholder="Search customer, phone, service..."
+        >
+
+        <select id="jobStatusFilter">
+            <option value="all">All Jobs</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Accepted">Accepted</option>
+            <option value="Completed">Completed</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+
+        <select id="jobPaymentFilter">
+            <option value="all">All Payments</option>
+            <option value="Paid">Paid</option>
+            <option value="Unpaid">Unpaid</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+        </select>
+    </div>
+
+    {% if jobs %}
+    <div class="customer-booking-list">
+
+        {% for job in jobs %}
+        {% set job_total = job.total_amount or (job.service.price * 1.18)|round(0) %}
+        {% set job_commission = (job_total * 0.40)|round(0) %}
+        {% set job_company_share = (job_total * 0.60)|round(0) %}
+
+        <div
+            class="customer-booking-card tech-job-card"
+            data-status="{{ job.status }}"
+            data-payment="{{ job.payment_status }}"
+            data-search="{{ job.customer_name }} {{ job.phone }} {{ job.service.name }} {{ job.service.clan }} {{ job.payment_method }}"
+        >
+
+            <div class="tech-notification-box">
+                🔔 <b>JOB ALERT</b><br><br>
+
+                <b>Service:</b> {{ job.service.name }}<br>
+                <b>Customer:</b> {{ job.customer_name }}<br>
+                <b>Phone:</b> {{ job.phone }}<br>
+                <b>Date:</b> {{ job.booking_date }}<br>
+                <b>Time:</b> {{ job.booking_time }}<br>
+                <b>Address:</b> {{ job.address }}
+            </div>
+
+            <div class="customer-booking-header">
+                <div>
+                    <span class="booking-id">#RRCP-{{ job.id }}</span>
+                    <h3>{{ job.service.name }}</h3>
+                    <p>{{ job.service.clan }}</p>
+                </div>
+
+                <span class="clean-status">{{ job.status }}</span>
+            </div>
+
+            <div class="booking-info-grid">
+                <p><b>Customer</b><br>{{ job.customer_name }}</p>
+                <p><b>Phone</b><br>{{ job.phone }}</p>
+                <p><b>Date</b><br>{{ job.booking_date }}</p>
+                <p><b>Time</b><br>{{ job.booking_time }}</p>
+
+                <p>
+                    <b>Total Amount</b><br>
+                    ₹{{ job_total }}
+                </p>
+
+                <p>
+                    <b>My Commission 40%</b><br>
+                    ₹{{ job_commission }}
+                </p>
+
+                <p>
+                    <b>RR CLAN PRO Share 60%</b><br>
+                    ₹{{ job_company_share }}
+                </p>
+
+                <p>
+                    <b>Payment</b><br>
+                    {% if job.payment_status == "Paid" %}
+                        ✅ Paid
+                    {% elif job.payment_status == "Pending" %}
+                        ⏳ Pending
+                    {% elif job.payment_status == "Failed" %}
+                        ❌ Failed
+                    {% else %}
+                        💵 Unpaid
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="tech-location-box">
+                <h4>Customer Location</h4>
+
+                <p><b>Building / Flat:</b> {{ job.building_no or "Not added" }}</p>
+                <p><b>Floor:</b> {{ job.floor or "Not added" }}</p>
+                <p><b>Landmark:</b> {{ job.landmark or "Not added" }}</p>
+
+                {% if job.map_link %}
+                    <a class="btn" target="_blank" href="{{ job.map_link }}">
+                        📍 Open Customer Location in Google Maps
+                    </a>
+                {% else %}
+                    <div class="customer-alert danger-box">
+                        Location not captured. Please call customer for exact location.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="tech-payment-box">
+                <h4>Payment Instruction</h4>
+
+                <p>
+                    <b>Payment Method:</b>
+                    {{ job.payment_method or "Cash After Service" }}
+                </p>
+
+                <p>
+                    <b>Payment Status:</b>
+                    {{ job.payment_status or "Unpaid" }}
+                </p>
+
+                {% if job.payment_method == "Cash After Service" and job.payment_status != "Paid" %}
+                    <div class="collect-cash">
+                        💵 Collect ₹{{ job_total }} from customer after service completion.
+                    </div>
+                {% else %}
+                    <div class="prepaid-order">
+                        ✅ Payment already received. Do not collect cash.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="customer-booking-body">
+                <p><b>Address:</b> {{ job.address }}</p>
+                <p><b>Notes:</b> {{ job.notes or "No notes provided" }}</p>
+            </div>
+
+            <div class="job-actions">
+
+                {% if job.status == "Assigned" %}
+                    <a class="btn" href="{{ url_for('update_job_status', booking_id=job.id, action='accept') }}">
+                        ✅ Accept Job
+                    </a>
+
+                    <a class="btn-outline" href="{{ url_for('update_job_status', booking_id=job.id, action='reject') }}">
+                        ❌ Reject Job
+                    </a>
+                {% endif %}
+
+                {% if job.status == "Accepted" %}
+                    <a class="btn" href="{{ url_for('update_job_status', booking_id=job.id, action='complete') }}">
+                        ✅ Mark Completed
+                    </a>
+                {% endif %}
+
+                {% if job.status == "Completed" %}
+                    <div class="customer-alert success-box">
+                        ✅ Job completed successfully.
+                    </div>
+
+                    {% if job.payment_method == "Cash After Service" and job.payment_status != "Paid" %}
+                        <a class="btn" href="{{ url_for('collect_payment', booking_id=job.id) }}">
+                            💵 Collect Cash
+                        </a>
+                    {% endif %}
+
+                    {% if job.payment_status == "Paid" %}
+                        <div class="customer-alert success-box">
+                            ✅ Payment collected successfully.
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <a class="btn-outline" href="tel:{{ job.phone }}">
+                    📞 Call Customer
+                </a>
+
+                <a
+                    class="btn-outline"
+                    target="_blank"
+                    href="https://wa.me/91{{ job.phone }}?text=Hello%20{{ job.customer_name }}%2C%20I%20am%20your%20RR%20CLAN%20PRO%20technician.%20I%20have%20received%20your%20booking%20for%20{{ job.service.name }}.%20I%20will%20visit%20on%20{{ job.booking_date }}%20at%20{{ job.booking_time }}."
+                >
+                    📱 Booking Confirmed
+                </a>
+
+                <a
+                    class="btn-outline"
+                    target="_blank"
+                    href="https://wa.me/91{{ job.phone }}?text=Hello%20{{ job.customer_name }}%2C%20I%20have%20accepted%20your%20RR%20CLAN%20PRO%20booking%20and%20will%20arrive%20as%20scheduled."
+                >
+                    ✅ Job Accepted
+                </a>
+
+                <a
+                    class="btn-outline"
+                    target="_blank"
+                    href="https://wa.me/91{{ job.phone }}?text=Hello%20{{ job.customer_name }}%2C%20your%20service%20has%20been%20completed.%20Thank%20you%20for%20choosing%20RR%20CLAN%20PRO.%20Please%20rate%20your%20experience%20from%20your%20dashboard."
+                >
+                    🎉 Service Completed
+                </a>
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="empty classy-empty">
+        <h2>No jobs assigned</h2>
+        <p>Once admin assigns work to you, job notifications will appear here.</p>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+const jobSearch = document.getElementById("jobSearch");
+const jobStatusFilter = document.getElementById("jobStatusFilter");
+const jobPaymentFilter = document.getElementById("jobPaymentFilter");
+const jobCards = document.querySelectorAll(".tech-job-card");
+
+function filterTechnicianJobs() {
+    const search = jobSearch.value.toLowerCase();
+    const status = jobStatusFilter.value;
+    const payment = jobPaymentFilter.value;
+
+    jobCards.forEach(card => {
+        const text = card.dataset.search.toLowerCase();
+        const cardStatus = card.dataset.status;
+        const cardPayment = card.dataset.payment;
+
+        const searchMatch = text.includes(search);
+        const statusMatch = status === "all" || cardStatus === status;
+        const paymentMatch = payment === "all" || cardPayment === payment;
+
+        card.style.display =
+            searchMatch && statusMatch && paymentMatch
+            ? ""
+            : "none";
+    });
+}
+
+if (jobSearch) {
+    jobSearch.addEventListener("keyup", filterTechnicianJobs);
+}
+
+if (jobStatusFilter) {
+    jobStatusFilter.addEventListener("change", filterTechnicianJobs);
+}
+
+if (jobPaymentFilter) {
+    jobPaymentFilter.addEventListener("change", filterTechnicianJobs);
+}
+</script>
+
+{% endblock %}

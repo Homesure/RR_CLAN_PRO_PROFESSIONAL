@@ -1,0 +1,371 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="receipt-page">
+
+<style>
+.receipt-page{
+    min-height:100vh;
+    background:#f5f5f5;
+    padding:50px 20px;
+}
+
+.receipt-card{
+    width:100%;
+    max-width:900px;
+    margin:40px auto;
+    background:#fff;
+    border-radius:30px;
+    padding:50px;
+    box-shadow:0 20px 60px rgba(0,0,0,.12);
+}
+
+.receipt-title{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.receipt-title h1{
+    font-size:42px;
+    margin:0;
+    letter-spacing:1px;
+}
+
+.receipt-title p{
+    color:#777;
+    margin-top:6px;
+}
+
+.invoice-number{
+    font-weight:900;
+    color:#000 !important;
+}
+
+.receipt-status{
+    background:#000;
+    color:#fff;
+    padding:12px 20px;
+    border-radius:50px;
+    display:inline-block;
+    margin-top:15px;
+    font-weight:800;
+    border:2px solid #f5c542;
+}
+
+.receipt-divider{
+    border-top:2px dashed #ddd;
+    margin:28px 0;
+}
+
+.receipt-section{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.receipt-section small{
+    color:#777;
+    font-weight:800;
+}
+
+.receipt-section h3{
+    margin-top:6px;
+}
+
+.receipt-service-row,
+.receipt-total-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:14px 0;
+}
+
+.receipt-service-row{
+    background:#fafafa;
+    padding:15px 18px;
+    border-radius:14px;
+}
+
+.receipt-payable{
+    background:#000;
+    color:#fff;
+    padding:18px;
+    border-radius:18px;
+    margin-top:18px;
+    font-weight:900;
+}
+
+.receipt-payable strong{
+    font-size:24px;
+}
+
+.payment-status-box{
+    background:#f7f7f7;
+    padding:16px 18px;
+    border-radius:16px;
+    margin-top:12px;
+    font-weight:900;
+}
+
+.payment-status-box.paid{
+    background:#eafff1;
+    color:#0c8d3f;
+}
+
+.payment-status-box.unpaid{
+    background:#fff1f1;
+    color:#d92626;
+}
+
+.receipt-booking-id{
+    background:#f3f3f3;
+    padding:14px 16px;
+    border-radius:12px;
+    margin-bottom:10px;
+    font-weight:900;
+}
+
+.receipt-warning{
+    margin-top:20px;
+    background:#fff8e6;
+    border:1px solid #ffd86b;
+    padding:15px;
+    border-radius:14px;
+    text-align:center;
+    font-weight:800;
+}
+
+.receipt-warning.completed{
+    background:#eafff1;
+    border-color:#0c8d3f;
+    color:#0c8d3f;
+}
+
+.receipt-warning.accepted{
+    background:#eef5ff;
+    border-color:#4d8dff;
+    color:#1b5fc9;
+}
+
+.receipt-actions{
+    display:flex;
+    gap:15px;
+    margin-top:30px;
+    flex-wrap:wrap;
+}
+
+.receipt-actions a,
+.receipt-actions button{
+    flex:1;
+    padding:15px;
+    border:none;
+    border-radius:14px;
+    font-weight:900;
+    cursor:pointer;
+    text-decoration:none;
+    text-align:center;
+}
+
+.btn-black{
+    background:#000;
+    color:#fff;
+}
+
+.btn-white{
+    background:#fff;
+    border:2px solid #000 !important;
+    color:#000;
+}
+
+.receipt-footer{
+    text-align:center;
+    margin-top:30px;
+    color:#777;
+}
+
+@media print{
+    .navbar,
+    .footer,
+    .receipt-actions{
+        display:none !important;
+    }
+
+    .receipt-page{
+        background:#fff;
+        padding:0;
+    }
+
+    .receipt-card{
+        box-shadow:none;
+        margin:0;
+        max-width:100%;
+        border-radius:0;
+    }
+}
+</style>
+
+    <div class="receipt-card">
+
+        <div class="receipt-title">
+            <h1>RR CLAN PRO</h1>
+
+            <p>Professional Home Services Receipt</p>
+
+            <p class="invoice-number">
+                Invoice #: {{ bookings[0].invoice_number or ("INV-" ~ bookings[0].id) }}
+            </p>
+
+            <div class="receipt-status">
+                ✅ Booking Confirmed
+            </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-section">
+            <div>
+                <small>Customer</small>
+                <h3>{{ current_user.name }}</h3>
+            </div>
+
+            <div>
+                <small>Date</small>
+                <h3>{{ bookings[0].booking_date }}</h3>
+            </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <h3>Services Booked</h3>
+
+        {% for booking in bookings %}
+        <div class="receipt-service-row">
+            <span>{{ booking.service.name }}</span>
+
+            {% if booking.total_amount %}
+                <strong>₹{{ booking.total_amount }}</strong>
+            {% else %}
+                <strong>₹{{ (booking.service.price * 1.18)|round(2) }}</strong>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-total-row">
+            <span>GST Included</span>
+            <strong>18%</strong>
+        </div>
+
+        {% set total_discount = bookings|sum(attribute='discount') %}
+
+        {% if total_discount and total_discount > 0 %}
+        <div class="receipt-total-row">
+            <span>Discount Applied</span>
+            <strong>-₹{{ total_discount }}</strong>
+        </div>
+        {% endif %}
+
+        <div class="receipt-payable">
+            <div class="receipt-total-row">
+                {% if bookings[0].payment_status == "Paid" %}
+                    <span>Total Amount Paid</span>
+                {% elif payment_method == "Cash After Service" %}
+                    <span>Amount Payable After Service</span>
+                {% else %}
+                    <span>Amount Payable Online</span>
+                {% endif %}
+
+                <strong>₹{{ total }}</strong>
+            </div>
+        </div>
+
+        {% if bookings[0].payment_status == "Paid" %}
+        <div class="payment-status-box paid">
+            ✅ Payment Status: Paid
+        </div>
+        {% else %}
+        <div class="payment-status-box unpaid">
+            ⏳ Payment Status: Unpaid
+        </div>
+        {% endif %}
+
+        <div class="receipt-total-row">
+            <span>Payment Method</span>
+
+            {% if payment_method == "Cash After Service" %}
+                <strong>💵 Cash After Service</strong>
+            {% elif payment_method == "UPI" %}
+                <strong>📱 UPI</strong>
+            {% elif payment_method == "Card" %}
+                <strong>💳 Card</strong>
+            {% elif payment_method == "Online Payment" %}
+                <strong>✅ Online Payment</strong>
+            {% else %}
+                <strong>{{ payment_method }}</strong>
+            {% endif %}
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <h3>Booking References</h3>
+
+        {% for booking in bookings %}
+        <div class="receipt-booking-id">
+            #RRCP-{{ booking.id }}
+        </div>
+        {% endfor %}
+
+        {% if bookings[0].status == "Completed" %}
+            <div class="receipt-warning completed">
+                ✅ Status: Service Completed
+            </div>
+        {% elif bookings[0].status == "Accepted" %}
+            <div class="receipt-warning accepted">
+                🧑‍🔧 Status: Technician Accepted Job
+            </div>
+        {% elif bookings[0].status == "Assigned" %}
+            <div class="receipt-warning accepted">
+                🔔 Status: Technician Assigned
+            </div>
+        {% elif bookings[0].status == "Rejected" %}
+            <div class="receipt-warning">
+                ⚠️ Status: Technician Rejected. Admin will reassign soon.
+            </div>
+        {% else %}
+            <div class="receipt-warning">
+                Status: Pending Technician Assignment
+            </div>
+        {% endif %}
+
+        <div class="receipt-actions">
+
+            <button onclick="window.print()" class="btn-black">
+                🖨 Print Receipt
+            </button>
+
+            {% if bookings[0].payment_status != "Paid" and payment_method != "Cash After Service" %}
+            <a href="{{ url_for('razorpay_payment', booking_ids=request.args.get('booking_ids'), total=total) }}" class="btn-black">
+                Pay Now
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('customer_dashboard') }}" class="btn-white">
+                View Dashboard
+            </a>
+
+            <a href="{{ url_for('book') }}" class="btn-white">
+                Book Another Service
+            </a>
+
+        </div>
+
+        <div class="receipt-footer">
+            Thank you for choosing RR CLAN PRO ❤️
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

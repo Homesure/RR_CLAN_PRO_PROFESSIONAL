@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="data-hero">
+    <p class="hero-tag">CUSTOMER HISTORY</p>
+    <h1>{{ customer.name }}</h1>
+    <p>{{ customer.email }} • {{ customer.phone }}</p>
+</section>
+
+<section class="data-center">
+
+    <div class="data-stats">
+        <div>
+            <span>Total Bookings</span>
+            <h2>{{ bookings|length }}</h2>
+        </div>
+
+        <div>
+            <span>Completed</span>
+            <h2>{{ bookings|selectattr("status", "equalto", "Completed")|list|length }}</h2>
+        </div>
+
+        <div>
+            <span>Pending</span>
+            <h2>{{ bookings|selectattr("status", "equalto", "Pending")|list|length }}</h2>
+        </div>
+
+        <div>
+            <span>Total Spend</span>
+            <h2>₹{{ (bookings|sum(attribute='service.price') * 1.18)|round(2) }}</h2>
+        </div>
+    </div>
+
+    <div class="data-table-wrap">
+        <table class="admin-table">
+            <tr>
+                <th>Booking ID</th>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Technician</th>
+                <th>Amount</th>
+                <th>Rating</th>
+            </tr>
+
+            {% for booking in bookings %}
+            <tr>
+                <td>#RRCP-{{ booking.id }}</td>
+                <td>{{ booking.service.name }}</td>
+                <td>{{ booking.status }}</td>
+                <td>{{ booking.booking_date }}</td>
+                <td>{{ booking.technician.name if booking.technician else "Not Assigned" }}</td>
+                <td>₹{{ (booking.service.price * 1.18)|round(2) }}</td>
+                <td>{{ booking.rating or "-" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <br>
+    <a class="btn" href="{{ url_for('admin_data') }}">Back to Data Center</a>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,339 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="customer-clean-header">
+    <div>
+        <p class="hero-tag">CUSTOMER DASHBOARD</p>
+        <h1>Welcome, {{ current_user.name }}</h1>
+        <p>Track bookings, technician assignment, service progress, payments, rewards and ratings.</p>
+    </div>
+
+    <a class="hero-main-btn" href="{{ url_for('book') }}">Book New Service</a>
+</section>
+<section class="customer-clean-section">
+    <div class="customer-reward-box">
+        <div>
+            <p class="eyebrow">CUSTOMER SUPPORT</p>
+            <h2>Need help with a booking?</h2>
+            <p>Raise a support ticket for complaints, refund request, technician callback or service issues.</p>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('create_ticket') }}" class="rating-form">
+
+        <label>Select Booking Optional</label>
+        <select name="booking_id">
+            <option value="">General Support</option>
+
+            {% for booking in bookings %}
+            <option value="{{ booking.id }}">
+                #RRCP-{{ booking.id }} - {{ booking.service.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Subject</label>
+        <input
+            type="text"
+            name="subject"
+            required
+            placeholder="Example: Technician late / Refund request / Bad service"
+        >
+
+        <label>Message</label>
+        <textarea
+            name="message"
+            required
+            placeholder="Explain your issue..."
+        ></textarea>
+
+        <button type="submit" class="btn">
+            🎫 Submit Support Ticket
+        </button>
+
+    </form>
+</section>
+<section class="customer-clean-section">
+    <div class="section-head">
+        <p class="eyebrow">Support Tickets</p>
+        <h2>Your help requests</h2>
+    </div>
+
+    {% if tickets %}
+    <div class="customer-booking-list">
+        {% for ticket in tickets %}
+        <div class="customer-booking-card">
+            <div class="customer-booking-header">
+                <div>
+                    <span class="booking-id">#TICKET-{{ ticket.id }}</span>
+                    <h3>{{ ticket.subject }}</h3>
+                    <p>{{ ticket.created_at.strftime("%d-%m-%Y %I:%M %p") }}</p>
+                </div>
+
+                <span class="clean-status">{{ ticket.status }}</span>
+            </div>
+
+            <div class="customer-booking-body">
+                <p><b>Your Message:</b> {{ ticket.message }}</p>
+
+                {% if ticket.admin_reply %}
+                <div class="customer-alert success-box">
+                    <b>Admin Reply:</b><br>
+                    {{ ticket.admin_reply }}
+                </div>
+                {% else %}
+                <div class="customer-alert">
+                    Waiting for admin reply.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty classy-empty">
+        <h2>No support tickets yet</h2>
+        <p>Your support requests will appear here.</p>
+    </div>
+    {% endif %}
+</section>
+
+<section class="customer-clean-section">
+
+    <div class="admin-clean-stats">
+        <div>
+            <span>Total Bookings</span>
+            <h2>{{ bookings|length }}</h2>
+        </div>
+
+        <div>
+            <span>Pending</span>
+            <h2>{{ bookings|selectattr("status", "equalto", "Pending")|list|length }}</h2>
+        </div>
+
+        <div>
+            <span>Completed</span>
+            <h2>{{ bookings|selectattr("status", "equalto", "Completed")|list|length }}</h2>
+        </div>
+
+        <div>
+            <span>Wallet Balance</span>
+            <h2>₹{{ current_user.wallet_balance or 0 }}</h2>
+        </div>
+    </div>
+
+</section>
+
+<section class="customer-clean-section">
+    <div class="customer-reward-box">
+        <div>
+            <p class="eyebrow">NEIGHBOUR REWARD</p>
+            <h2>Your Referral Code: {{ current_user.referral_code or "Code will appear soon" }}</h2>
+            <p>Share this code with your neighbour. They get ₹100 OFF and you get ₹200 wallet reward after their service is completed.</p>
+        </div>
+    </div>
+</section>
+
+<section class="customer-clean-section">
+    <div class="section-head">
+        <p class="eyebrow">Your Bookings</p>
+        <h2>Service history and live status</h2>
+    </div>
+
+    {% if bookings %}
+    <div class="customer-booking-list">
+
+        {% for booking in bookings %}
+        <div class="customer-booking-card">
+
+            <div class="customer-booking-header">
+                <div>
+                    <span class="booking-id">#RRCP-{{ booking.id }}</span>
+                    <h3>{{ booking.service.name }}</h3>
+                    <p>{{ booking.service.clan }}</p>
+                </div>
+
+                <span class="clean-status">{{ booking.status }}</span>
+            </div>
+
+            <div class="customer-progress">
+                <div class="{% if booking.status in ['Pending','Assigned','Accepted','Completed'] %}active{% endif %}">
+                    <span>1</span>
+                    <p>Booked</p>
+                </div>
+
+                <div class="{% if booking.status in ['Assigned','Accepted','Completed'] %}active{% endif %}">
+                    <span>2</span>
+                    <p>Assigned</p>
+                </div>
+
+                <div class="{% if booking.status in ['Accepted','Completed'] %}active{% endif %}">
+                    <span>3</span>
+                    <p>Accepted</p>
+                </div>
+
+                <div class="{% if booking.status == 'Completed' %}active{% endif %}">
+                    <span>4</span>
+                    <p>Completed</p>
+                </div>
+            </div>
+
+            <div class="booking-info-grid">
+                <p><b>Booking ID</b><br>#RRCP-{{ booking.id }}</p>
+                <p><b>Date</b><br>{{ booking.booking_date }}</p>
+                <p><b>Time</b><br>{{ booking.booking_time }}</p>
+                <p><b>Base Price</b><br>₹{{ booking.service.price }}</p>
+                <p><b>GST 18%</b><br>₹{{ ((booking.service.price * 18) / 100)|round(2) }}</p>
+
+                <p>
+                    <b>Total</b><br>
+                    {% if booking.total_amount %}
+                        ₹{{ booking.total_amount }}
+                    {% else %}
+                        ₹{{ (booking.service.price * 1.18)|round(2) }}
+                    {% endif %}
+                </p>
+
+                <p><b>Discount</b><br>₹{{ booking.discount or 0 }}</p>
+                <p><b>Coupon</b><br>{{ booking.coupon_code or "Not Used" }}</p>
+                <p><b>Payment Method</b><br>{{ booking.payment_method or "Cash After Service" }}</p>
+                <p><b>Payment Status</b><br>{{ booking.payment_status or "Unpaid" }}</p>
+                <p><b>Technician</b><br>{{ booking.technician.name if booking.technician else "Not Assigned" }}</p>
+
+                <p>
+                    <b>Technician Phone</b><br>
+                    {% if booking.technician and booking.technician.phone %}
+                        {{ booking.technician.phone }}
+                    {% else %}
+                        Waiting
+                    {% endif %}
+                </p>
+            </div>
+
+            {% if booking.customer_notification %}
+            <div class="customer-live-notification">
+                🔔 {{ booking.customer_notification }}
+            </div>
+            {% endif %}
+
+            <div class="customer-booking-body">
+                <p><b>Address:</b> {{ booking.address }}</p>
+                <p><b>Notes:</b> {{ booking.notes or "No notes added" }}</p>
+            </div>
+
+            {% if booking.latitude and booking.longitude %}
+            <div class="map-preview">
+                <a
+                    href="https://www.google.com/maps?q={{ booking.latitude }},{{ booking.longitude }}"
+                    target="_blank"
+                    class="btn-outline">
+                    📍 View Location On Google Maps
+                </a>
+            </div>
+            {% endif %}
+
+            {% if booking.status == "Pending" %}
+            <div class="customer-alert">
+                Your request has been received. Admin will assign a technician soon.
+            </div>
+            {% elif booking.status == "Assigned" %}
+            <div class="customer-alert">
+                Technician assigned. Waiting for technician to accept the job.
+            </div>
+            {% elif booking.status == "Accepted" %}
+            <div class="customer-alert">
+                Technician accepted your job and will visit as scheduled.
+            </div>
+            {% elif booking.status == "Completed" %}
+            <div class="customer-alert success-box">
+                Service completed. Thank you for choosing RR CLAN PRO.
+            </div>
+            {% elif booking.status == "Rejected" %}
+            <div class="customer-alert danger-box">
+                Technician rejected this job. Admin will reassign another technician.
+            </div>
+            {% endif %}
+
+            {% if booking.referred_by_user_id %}
+            <div class="reward-card">
+                <h4>🎁 Referral Applied</h4>
+                <p>You received ₹100 referral discount on this booking.</p>
+            </div>
+            {% endif %}
+
+            {% if booking.status == "Completed" and booking.referral_reward_given %}
+            <div class="reward-card">
+                <h4>🎉 Referral Reward Processed</h4>
+                <p>Neighbour reward has been processed successfully.</p>
+            </div>
+            {% endif %}
+
+            <div class="service-summary-card">
+                <h4>Service Summary</h4>
+                <ul>
+                    <li>✔ Verified RR CLAN PRO technician</li>
+                    <li>✔ Admin monitored service flow</li>
+                    <li>✔ Transparent pricing with GST</li>
+                    <li>✔ Customer rating after completion</li>
+                </ul>
+            </div>
+
+            {% if booking.status == "Completed" %}
+                {% if booking.rating %}
+                    <div class="rating-done-box">
+                        <b>Your Rating:</b> {{ booking.rating }} ⭐<br>
+                        <b>Review:</b> {{ booking.review or "No review added" }}
+                    </div>
+                {% else %}
+                    <form method="POST" action="{{ url_for('rate_booking', booking_id=booking.id) }}" class="rating-form">
+                        <label>Rate Service</label>
+
+                        <select name="rating" required>
+                            <option value="">Select Rating</option>
+                            <option value="5">5 ⭐ Excellent</option>
+                            <option value="4">4 ⭐ Good</option>
+                            <option value="3">3 ⭐ Average</option>
+                            <option value="2">2 ⭐ Poor</option>
+                            <option value="1">1 ⭐ Bad</option>
+                        </select>
+
+                        <textarea name="review" placeholder="Write your review..."></textarea>
+
+                        <button type="submit" class="btn">Submit Rating</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            <div class="customer-actions">
+
+    <a class="btn-outline" href="{{ url_for('book') }}">
+        Book Again
+    </a>
+
+    <a class="btn-outline"
+       href="{{ url_for('download_invoice', booking_id=booking.id) }}">
+        📄 Download Invoice
+    </a>
+
+    {% if booking.technician and booking.technician.phone %}
+    <a class="btn-outline"
+       href="tel:{{ booking.technician.phone }}">
+        Call Technician
+    </a>
+    {% endif %}
+
+</div>
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="empty classy-empty">
+        <h2>No bookings yet</h2>
+        <p>Start by booking your first RR CLAN PRO service.</p>
+        <a class="btn" href="{{ url_for('book') }}">Book First Service</a>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}

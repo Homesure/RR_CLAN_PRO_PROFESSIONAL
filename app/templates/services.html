@@ -1,0 +1,327 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="uc-hero">
+    <p class="eyebrow">RR CLAN PRO Services</p>
+    <h1>What are you looking for?</h1>
+    <p>Choose a service category, view packages, check details and book instantly.</p>
+</section>
+<section class="rr-special-offer">
+
+    <div class="rr-offer-badge">
+        LIMITED TIME OFFER
+    </div>
+
+    <h2>
+        🏠 Deep Home Cleaning + Free Veg Meal
+    </h2>
+
+    <p>
+        Book a complete home cleaning service and enjoy a complimentary vegetarian meal from our partner restaurant.
+    </p>
+
+    <div class="rr-offer-grid">
+
+        <div class="rr-offer-box">
+            <h3>1 BHK</h3>
+            <h1>₹1,999</h1>
+            <p>Deep Cleaning</p>
+            <span>🍽 Free Veg Meal Included</span>
+        </div>
+
+        <div class="rr-offer-box popular">
+            <div class="popular-tag">MOST BOOKED</div>
+
+            <h3>2 BHK</h3>
+            <h1>₹2,999</h1>
+            <p>Deep Cleaning</p>
+            <span>🍽 Free Veg Meal Included</span>
+        </div>
+
+        <div class="rr-offer-box">
+            <h3>3 BHK</h3>
+            <h1>₹3,999</h1>
+            <p>Deep Cleaning</p>
+            <span>🍽 Free Veg Meal Included</span>
+        </div>
+
+    </div>
+
+    <a href="{{ url_for('book') }}" class="rr-offer-btn">
+        Book Cleaning Service
+    </a>
+
+</section>
+
+<section class="uc-category-page">
+
+    {% for clan, categories in service_data.items() %}
+    <div class="uc-clan-block">
+        <div class="uc-clan-head">
+            <p>{{ clan }}</p>
+            <h2>{{ clan }} Services</h2>
+        </div>
+
+        <div class="uc-category-grid">
+
+            {% for category, services in categories.items() %}
+
+            {% set modal_id = "cat-" ~ loop.index ~ "-" ~ category|replace(" ", "-") %}
+
+            {% set cat = category|lower %}
+            {% if "ac" in cat %}
+                {% set image_file = "ac.jpg" %}
+            {% elif "car" in cat %}
+                {% set image_file = "carwash.jpg" %}
+            {% elif "laundry" in cat %}
+                {% set image_file = "laundry.jpg" %}
+            {% elif "plumb" in cat %}
+                {% set image_file = "plumbing.jpg" %}
+            {% elif "electric" in cat or "geyser" in cat or "cctv" in cat %}
+                {% set image_file = "electrical.jpg" %}
+            {% elif "pest" in cat %}
+                {% set image_file = "pest.jpg" %}
+            {% elif "garden" in cat %}
+                {% set image_file = "garden.jpg" %}
+            {% elif "waste" in cat %}
+                {% set image_file = "waste.jpg" %}
+            {% else %}
+                {% set image_file = "cleaning.jpg" %}
+            {% endif %}
+
+            <div class="uc-category-card" onclick="openCategory('{{ modal_id }}')">
+
+                <div class="uc-category-img category-image-box">
+                    <img src="{{ url_for('static', filename='images/services/' ~ image_file) }}" alt="{{ category }}">
+                </div>
+
+                <h3>{{ category }}</h3>
+                <p>{{ services|length }} services available</p>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+    {% endfor %}
+
+</section>
+
+
+{% for clan, categories in service_data.items() %}
+    {% for category, services in categories.items() %}
+    {% set modal_id = "cat-" ~ loop.index ~ "-" ~ category|replace(" ", "-") %}
+
+    <div class="uc-modal category-modal" id="{{ modal_id }}">
+        <div class="uc-modal-box">
+
+            <button class="uc-close" onclick="closeModals()">×</button>
+
+            <div class="uc-modal-head">
+                <div>
+                    <p>{{ clan }}</p>
+                    <h2>{{ category }}</h2>
+                    <span>{{ services|length }} packages available</span>
+                </div>
+            </div>
+
+            <div class="uc-package-list">
+
+                {% for service in services %}
+
+                {% set s = service.name|lower %}
+                {% if "ac" in s %}
+                    {% set service_image = "ac.jpg" %}
+                {% elif "car" in s %}
+                    {% set service_image = "carwash.jpg" %}
+                {% elif "laundry" in s or "iron" in s %}
+                    {% set service_image = "laundry.jpg" %}
+                {% elif "plumb" in s %}
+                    {% set service_image = "plumbing.jpg" %}
+                {% elif "electric" in s or "geyser" in s or "cctv" in s %}
+                    {% set service_image = "electrical.jpg" %}
+                {% elif "pest" in s %}
+                    {% set service_image = "pest.jpg" %}
+                {% elif "garden" in s or "landscape" in s %}
+                    {% set service_image = "garden.jpg" %}
+                {% elif "waste" in s or "trash" in s %}
+                    {% set service_image = "waste.jpg" %}
+                {% else %}
+                    {% set service_image = "cleaning.jpg" %}
+                {% endif %}
+
+                <div class="uc-package-card">
+
+                    <div class="uc-package-left">
+                        <h3>{{ service.name }}</h3>
+
+                        <div class="uc-rating">
+                            ★ 4.8 <span>120+ reviews</span>
+                        </div>
+
+                        <p class="uc-price">
+                            ₹{{ service.price }} + GST
+                            <span>• {{ service.duration }}</span>
+                        </p>
+
+                        <p>{{ service.description }}</p>
+
+                        <ul>
+                            <li>Verified RR CLAN PRO professional</li>
+                            <li>Transparent pricing</li>
+                            <li>Admin assigns suitable technician</li>
+                        </ul>
+
+                        <button type="button" class="details-link" onclick="openDetails('details-{{ service.id }}')">
+                            View details
+                        </button>
+                    </div>
+
+                    <div class="uc-package-right">
+                        <div class="uc-service-img">
+                            <img src="{{ url_for('static', filename='images/services/' ~ service_image) }}" alt="{{ service.name }}">
+                        </div>
+
+                        {% if current_user.is_authenticated and current_user.role == "customer" %}
+                        <a href="{{ url_for('book') }}?service_id={{ service.id }}" class="uc-add-btn">Add</a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="uc-add-btn">Login</a>
+                        {% endif %}
+                    </div>
+
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+
+    {% endfor %}
+{% endfor %}
+
+{% for clan, categories in service_data.items() %}
+    {% for category, services in categories.items() %}
+        {% for service in services %}
+
+        {% set s = service.name|lower %}
+        {% if "ac" in s %}
+            {% set detail_image = "ac.jpg" %}
+        {% elif "car" in s %}
+            {% set detail_image = "carwash.jpg" %}
+        {% elif "laundry" in s or "iron" in s %}
+            {% set detail_image = "laundry.jpg" %}
+        {% elif "plumb" in s %}
+            {% set detail_image = "plumbing.jpg" %}
+        {% elif "electric" in s or "geyser" in s or "cctv" in s %}
+            {% set detail_image = "electrical.jpg" %}
+        {% elif "pest" in s %}
+            {% set detail_image = "pest.jpg" %}
+        {% elif "garden" in s or "landscape" in s %}
+            {% set detail_image = "garden.jpg" %}
+        {% elif "waste" in s or "trash" in s %}
+            {% set detail_image = "waste.jpg" %}
+        {% else %}
+            {% set detail_image = "cleaning.jpg" %}
+        {% endif %}
+
+        <div class="uc-modal details-modal" id="details-{{ service.id }}">
+            <div class="uc-details-box">
+
+                <button class="uc-close" onclick="closeDetails(this)">×</button>
+
+                <div class="uc-details-banner">
+                    <img src="{{ url_for('static', filename='images/services/' ~ detail_image) }}" alt="{{ service.name }}">
+                </div>
+
+                <div class="uc-details-content">
+                    <h2>{{ service.name }}</h2>
+
+                    <div class="uc-rating">
+                        ★ 4.8 <span>120+ reviews</span>
+                    </div>
+
+                    <h3>₹{{ service.price }} + GST</h3>
+                    <p>{{ service.duration }}</p>
+
+                    <p>{{ service.description }}</p>
+
+                    <ul>
+                        <li>Professional technician visit</li>
+                        <li>Transparent service process</li>
+                        <li>Admin monitored booking flow</li>
+                        <li>Customer rating after completion</li>
+                    </ul>
+
+                    {% if current_user.is_authenticated and current_user.role == "customer" %}
+                    <a href="{{ url_for('book') }}?service_id={{ service.id }}" class="uc-book-now">Book Now</a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="uc-book-now">Login to Book</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
+
+<script>
+let currentCategoryModal = null;
+
+function openCategory(id) {
+    closeModals();
+
+    currentCategoryModal = document.getElementById(id);
+
+    if (currentCategoryModal) {
+        currentCategoryModal.style.display = "flex";
+    }
+}
+
+function openDetails(id) {
+    const modal = document.getElementById(id);
+
+    if (modal) {
+        modal.style.display = "flex";
+    }
+}
+
+function closeDetails(button) {
+    const detailsModal = button.closest(".details-modal");
+
+    if (detailsModal) {
+        detailsModal.style.display = "none";
+    }
+
+    if (currentCategoryModal) {
+        currentCategoryModal.style.display = "flex";
+    }
+}
+
+function closeModals() {
+    document.querySelectorAll(".uc-modal").forEach(modal => {
+        modal.style.display = "none";
+    });
+
+    currentCategoryModal = null;
+}
+
+document.querySelectorAll(".uc-modal").forEach(modal => {
+    modal.addEventListener("click", function(e) {
+        if (e.target === modal) {
+            if (modal.classList.contains("details-modal")) {
+                modal.style.display = "none";
+
+                if (currentCategoryModal) {
+                    currentCategoryModal.style.display = "flex";
+                }
+            } else {
+                closeModals();
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

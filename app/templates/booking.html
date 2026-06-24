@@ -1,0 +1,825 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="rr-booking-page">
+
+<form method="POST" id="bookingForm">
+
+<input type="hidden" name="service_ids" id="selectedServiceIds" required>
+<input type="hidden" name="coupon_code" id="couponCodeHidden">
+<input type="hidden" name="discount" id="discountHidden" value="0">
+<input type="hidden" name="payment_method" id="paymentMethodHidden" value="Cash After Service">
+<input type="hidden" name="latitude" id="latitude" required>
+<input type="hidden" name="longitude" id="longitude" required>
+
+<div id="servicesScreen">
+
+    <div class="rr-booking-hero">
+        <p class="eyebrow">RR CLAN PRO BOOKING</p>
+
+        {% if selected_service %}
+        <h1>{{ selected_service.category }}</h1>
+        <p>Select packages and add-ons for {{ selected_service.category }}.</p>
+        {% else %}
+        <h1>Book Your Service</h1>
+        <p>Select services, add to cart and continue to checkout.</p>
+        {% endif %}
+    </div>
+
+    <div class="rr-offer-banner">
+        <div>
+            <h3>🎉 Save More</h3>
+            <p>Use coupon <b>RR100</b> and get ₹100 off above ₹999.</p>
+        </div>
+    </div>
+
+    <div class="rr-filter-box">
+        <input type="text" id="serviceSearchInput" placeholder="Search services like cleaning, AC, plumbing...">
+
+        <div class="rr-filter-buttons">
+            <button type="button" class="rr-filter-btn active" data-filter="all">All</button>
+            <button type="button" class="rr-filter-btn" data-filter="CARE CLAN">Care Clan</button>
+            <button type="button" class="rr-filter-btn" data-filter="TECH CLAN">Tech Clan</button>
+            <button type="button" class="rr-filter-btn" data-filter="FORCE CLAN">Force Clan</button>
+            <button type="button" class="rr-filter-btn" data-filter="low">Under ₹500</button>
+            <button type="button" class="rr-filter-btn" data-filter="high">₹500+</button>
+        </div>
+    </div>
+
+    <div class="rr-service-list">
+        {% for service in services %}
+        <div class="rr-service-card"
+             data-id="{{ service.id }}"
+             data-name="{{ service.name }}"
+             data-price="{{ service.price }}"
+             data-duration="{{ service.duration }}"
+             data-clan="{{ service.clan }}"
+             data-skill="{{ service.skill_required }}"
+             data-description="{{ service.description }}">
+
+            <div class="rr-service-icon">
+                {% if "Cleaning" in service.name %}🧹
+                {% elif "Laundry" in service.name %}👕
+                {% elif "Car Wash" in service.name %}🚗
+                {% elif "Plumbing" in service.name %}🚰
+                {% elif "Electrical" in service.name %}⚡
+                {% elif "AC" in service.name %}❄️
+                {% elif "Pest" in service.name %}🐜
+                {% elif "Landscaping" in service.name %}🌿
+                {% elif "Waste" in service.name %}🗑️
+                {% else %}🛠️
+                {% endif %}
+            </div>
+
+            <div class="rr-service-info">
+                <h3>{{ service.name }}</h3>
+                <p>⭐ 4.8 • {{ service.duration }}</p>
+                <strong>₹{{ service.price }} + GST</strong>
+                <button type="button" class="rr-view-btn">View details</button>
+            </div>
+
+            <button type="button" class="rr-add-btn">Add</button>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<div id="checkoutScreen" style="display:none;">
+
+    <div class="rr-checkout-head">
+        <button type="button" id="backBtn">← Back</button>
+        <h1>Checkout</h1>
+        <p>Review services, apply coupon, select payment and confirm booking.</p>
+    </div>
+
+    <div class="rr-checkout-grid">
+
+        <div class="rr-checkout-main">
+
+            <div class="rr-check-card">
+                <h2>Selected Services</h2>
+                <div id="checkoutServices"></div>
+            </div>
+
+            <div class="rr-check-card">
+                <h2>Coupon Code</h2>
+                <div class="rr-coupon-row">
+                    <input type="text" id="couponInput" placeholder="Enter coupon code">
+                    <button type="button" id="applyCouponBtn">Apply</button>
+                </div>
+                <p class="rr-hint">Try RR100 for ₹100 off above ₹999.</p>
+                <p id="couponMessage"></p>
+            </div>
+
+            <div class="rr-check-card referral-box">
+                <h2>Neighbour Referral Reward</h2>
+
+                <p class="rr-hint">
+                    🎁 Enter your neighbour's referral code and get ₹100 OFF.
+                    Your neighbour gets ₹200 wallet reward after your service is completed.
+                </p>
+
+                <label>Referral Code Optional</label>
+
+                <input
+                    type="text"
+                    name="referral_code"
+                    id="referralCodeInput"
+                    placeholder="Example: AFNA1234">
+
+                <p id="referralMessage" class="rr-hint"></p>
+            </div>
+
+            <div class="rr-check-card">
+                <h2>Payment Method</h2>
+
+                <label class="rr-payment-option">
+                    <input type="radio" name="payment_choice" value="Cash After Service" checked>
+                    <span>💵 Cash After Service</span>
+                </label>
+
+                <label class="rr-payment-option">
+                    <input type="radio" name="payment_choice" value="UPI">
+                    <span>📱 UPI</span>
+                </label>
+
+                <label class="rr-payment-option">
+                    <input type="radio" name="payment_choice" value="Card">
+                    <span>💳 Card</span>
+                </label>
+
+                <p class="rr-hint">
+                    Online payments will open Razorpay secure checkout after booking confirmation.
+                </p>
+            </div>
+
+            <div class="rr-check-card">
+                <h2>Customer Details</h2>
+
+                <label>Customer Name</label>
+                <input type="text" name="customer_name" value="{{ current_user.name }}" required>
+
+                <label>Phone Number</label>
+                <input type="text" name="phone" value="{{ current_user.phone or '' }}" required>
+
+                <div class="rr-two">
+                    <div>
+                        <label>Preferred Date</label>
+                        <input type="date" name="booking_date" required>
+                    </div>
+
+                    <div>
+                        <label>Preferred Time</label>
+                        <input type="time" name="booking_time" required>
+                    </div>
+                </div>
+
+                <h2>Service Location</h2>
+
+                <button
+                    type="button"
+                    class="location-btn mandatory-location"
+                    id="useLocationBtn">
+                    📍 Capture Live Location Required
+                </button>
+
+                <p id="locationStatus" class="location-status">
+                    ⚠️ Location is mandatory before booking confirmation.
+                </p>
+
+                <div class="rr-two">
+                    <div>
+                        <label>Building / Flat No</label>
+                        <input type="text" name="building_no" id="buildingNo" placeholder="Example: Flat 402 / House 12" required>
+                    </div>
+
+                    <div>
+                        <label>Floor</label>
+                        <input type="text" name="floor" id="floorNo" placeholder="Example: 4th Floor">
+                    </div>
+                </div>
+
+                <label>Landmark</label>
+                <input type="text" name="landmark" id="landmark" placeholder="Example: Near Forum Mall" required>
+
+                <textarea name="address" id="fullAddress" hidden required></textarea>
+
+                <label>Problem / Notes</label>
+                <textarea name="notes" placeholder="Example: AC not cooling, deep cleaning required..."></textarea>
+
+                <button type="submit" class="rr-confirm-btn">Confirm Booking</button>
+            </div>
+
+        </div>
+
+        <div class="rr-price-card">
+            <h2>Price Summary</h2>
+
+            <p>Subtotal <span id="subtotalText">₹0</span></p>
+            <p>GST 18% <span id="gstText">₹0</span></p>
+            <p>Discount <span id="discountText">₹0</span></p>
+
+            <h3>Total <span id="totalText">₹0</span></h3>
+        </div>
+
+    </div>
+
+</div>
+
+</form>
+
+</section>
+
+<div class="service-modal" id="serviceModal">
+    <div class="service-modal-box">
+
+        <button type="button" class="modal-close" id="closeModal">×</button>
+
+        <div class="uc-modal-top">
+            <div class="uc-modal-header">
+                <p>CARE CLAN</p>
+                <h2 id="modalServiceName">Service Name</h2>
+                <span id="modalServiceMeta">₹499 • 2-4 Hours</span>
+            </div>
+        </div>
+
+        <div class="modal-icon" id="modalIcon">🛠️</div>
+
+        <p id="modalDescription">
+            Professional RR CLAN PRO service.
+        </p>
+
+        <ul class="modal-points">
+            <li>Verified RR CLAN PRO technician</li>
+            <li>Transparent pricing</li>
+            <li>Admin assigns the right technician</li>
+            <li>Track booking from dashboard</li>
+        </ul>
+
+        <button type="button" class="btn full" id="modalAddBtn">
+            Add to Cart
+        </button>
+
+    </div>
+</div>
+
+<div class="rr-bottom-cart" id="bottomCart">
+    <div>
+        <h4 id="cartCount">0 services added</h4>
+        <p id="cartAmount">₹0 including GST</p>
+    </div>
+    <button type="button" id="continueBtn">Continue</button>
+</div>
+
+<script>
+const bookingForm = document.getElementById("bookingForm");
+
+const selectedServiceIds = document.getElementById("selectedServiceIds");
+const servicesScreen = document.getElementById("servicesScreen");
+const checkoutScreen = document.getElementById("checkoutScreen");
+
+const bottomCart = document.getElementById("bottomCart");
+const cartCount = document.getElementById("cartCount");
+const cartAmount = document.getElementById("cartAmount");
+const continueBtn = document.getElementById("continueBtn");
+
+const checkoutServices = document.getElementById("checkoutServices");
+const subtotalText = document.getElementById("subtotalText");
+const gstText = document.getElementById("gstText");
+const discountText = document.getElementById("discountText");
+const totalText = document.getElementById("totalText");
+
+const couponInput = document.getElementById("couponInput");
+const applyCouponBtn = document.getElementById("applyCouponBtn");
+const couponMessage = document.getElementById("couponMessage");
+const couponCodeHidden = document.getElementById("couponCodeHidden");
+const discountHidden = document.getElementById("discountHidden");
+const paymentMethodHidden = document.getElementById("paymentMethodHidden");
+
+const serviceModal = document.getElementById("serviceModal");
+const closeModal = document.getElementById("closeModal");
+const modalIcon = document.getElementById("modalIcon");
+const modalServiceName = document.getElementById("modalServiceName");
+const modalServiceMeta = document.getElementById("modalServiceMeta");
+const modalDescription = document.getElementById("modalDescription");
+const modalAddBtn = document.getElementById("modalAddBtn");
+
+const buildingNo = document.getElementById("buildingNo");
+const floorNo = document.getElementById("floorNo");
+const landmark = document.getElementById("landmark");
+const fullAddress = document.getElementById("fullAddress");
+
+const useLocationBtn = document.getElementById("useLocationBtn");
+const locationStatus = document.getElementById("locationStatus");
+const latitudeInput = document.getElementById("latitude");
+const longitudeInput = document.getElementById("longitude");
+
+const serviceSearchInput = document.getElementById("serviceSearchInput");
+const filterButtons = document.querySelectorAll(".rr-filter-btn");
+
+let cart = [];
+let discount = 0;
+let activeCard = null;
+let activeFilter = "all";
+
+function subtotal() {
+    return cart.reduce((sum, item) => sum + item.price, 0);
+}
+
+function gstAmount(amount) {
+    return amount * 0.18;
+}
+
+function getServiceIcon(name) {
+    if (name.includes("Cleaning")) return "🧹";
+    if (name.includes("Laundry")) return "👕";
+    if (name.includes("Car Wash")) return "🚗";
+    if (name.includes("Plumbing")) return "🚰";
+    if (name.includes("Electrical")) return "⚡";
+    if (name.includes("AC")) return "❄️";
+    if (name.includes("Pest")) return "🐜";
+    if (name.includes("Landscaping")) return "🌿";
+    if (name.includes("Waste")) return "🗑️";
+    return "🛠️";
+}
+
+function openServiceModal(card) {
+    activeCard = card;
+
+    modalIcon.innerText = getServiceIcon(card.dataset.name);
+    modalServiceName.innerText = card.dataset.name;
+    modalServiceMeta.innerText =
+        "₹" + card.dataset.price + " + GST • " + card.dataset.duration;
+
+    modalDescription.innerText =
+        card.dataset.description ||
+        "Professional RR CLAN PRO service with verified technician support.";
+
+    serviceModal.style.display = "flex";
+}
+
+function resetCoupon() {
+    discount = 0;
+    couponCodeHidden.value = "";
+    discountHidden.value = "0";
+}
+
+function saveCart() {
+    localStorage.setItem("rrclan_cart", JSON.stringify(cart));
+}
+
+function loadSavedCart() {
+    const savedCart = JSON.parse(localStorage.getItem("rrclan_cart") || "[]");
+
+    if (savedCart.length > 0) {
+        cart = savedCart;
+
+        cart.forEach(item => {
+            const card = document.querySelector(
+                `.rr-service-card[data-id="${item.id}"]`
+            );
+
+            if (card) {
+                card.classList.add("active");
+
+                const btn = card.querySelector(".rr-add-btn");
+
+                if (btn) {
+                    btn.innerText = "Added";
+                }
+            }
+        });
+    }
+}
+
+function updateCart() {
+    selectedServiceIds.value = cart.map(item => item.id).join(",");
+    saveCart();
+
+    let sub = subtotal();
+    let code = couponInput.value.trim().toUpperCase();
+
+    if (code !== "RR100" || sub < 999) {
+        resetCoupon();
+    }
+
+    let gst = gstAmount(sub);
+    let total = sub + gst - discount;
+
+    cartCount.innerText =
+        cart.length + (cart.length === 1 ? " service added" : " services added");
+
+    cartAmount.innerText =
+        "₹" + total.toFixed(2) + " including GST";
+
+    subtotalText.innerText = "₹" + sub.toFixed(2);
+    gstText.innerText = "₹" + gst.toFixed(2);
+    discountText.innerText = "-₹" + discount.toFixed(2);
+    totalText.innerText = "₹" + total.toFixed(2);
+
+    checkoutServices.innerHTML = "";
+
+    cart.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "rr-checkout-service";
+        row.innerHTML = `
+            <div class="rr-cart-service-info">
+                <h4>${item.name}</h4>
+                <p>${item.duration}</p>
+            </div>
+
+            <div class="rr-cart-service-actions">
+                <strong>₹${item.price.toFixed(2)}</strong>
+
+                <button
+                    type="button"
+                    class="rr-remove-service"
+                    onclick="removeService('${item.id}')">
+                    🗑 Remove
+                </button>
+            </div>
+        `;
+
+        checkoutServices.appendChild(row);
+    });
+
+    if (cart.length > 0 && checkoutScreen.style.display === "none") {
+        bottomCart.classList.add("show");
+        bottomCart.classList.add("cart-bounce");
+
+        setTimeout(() => {
+            bottomCart.classList.remove("cart-bounce");
+        }, 600);
+    } else {
+        bottomCart.classList.remove("show");
+    }
+}
+
+function addRemoveService(card) {
+    const id = card.dataset.id;
+    const exists = cart.find(item => item.id === id);
+
+    if (exists) {
+        cart = cart.filter(item => item.id !== id);
+        card.classList.remove("active");
+
+        const btn = card.querySelector(".rr-add-btn");
+        if (btn) {
+            btn.innerText = "Add";
+        }
+    } else {
+        cart.push({
+            id: id,
+            name: card.dataset.name,
+            price: parseFloat(card.dataset.price),
+            duration: card.dataset.duration
+        });
+
+        card.classList.add("active");
+
+        const btn = card.querySelector(".rr-add-btn");
+        if (btn) {
+            btn.innerText = "Added";
+        }
+    }
+
+    updateCart();
+}
+
+function removeService(id) {
+    cart = cart.filter(item => item.id !== id);
+
+    const card = document.querySelector(
+        `.rr-service-card[data-id="${id}"]`
+    );
+
+    if (card) {
+        card.classList.remove("active");
+
+        const btn = card.querySelector(".rr-add-btn");
+
+        if (btn) {
+            btn.innerText = "Add";
+        }
+    }
+
+    updateCart();
+}
+
+document.querySelectorAll(".rr-add-btn").forEach(btn => {
+    btn.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const card = this.closest(".rr-service-card");
+        addRemoveService(card);
+    });
+});
+
+document.querySelectorAll(".rr-view-btn").forEach(btn => {
+    btn.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const card = this.closest(".rr-service-card");
+        openServiceModal(card);
+    });
+});
+
+document.querySelectorAll(".rr-service-card").forEach(card => {
+    card.addEventListener("click", function(event) {
+        if (
+            event.target.classList.contains("rr-add-btn") ||
+            event.target.classList.contains("rr-view-btn")
+        ) {
+            return;
+        }
+
+        openServiceModal(card);
+    });
+});
+
+if (modalAddBtn) {
+    modalAddBtn.addEventListener("click", function() {
+        if (activeCard) {
+            addRemoveService(activeCard);
+            serviceModal.style.display = "none";
+        }
+    });
+}
+
+if (closeModal) {
+    closeModal.addEventListener("click", function() {
+        serviceModal.style.display = "none";
+    });
+}
+
+if (serviceModal) {
+    serviceModal.addEventListener("click", function(event) {
+        if (event.target === serviceModal) {
+            serviceModal.style.display = "none";
+        }
+    });
+}
+
+continueBtn.addEventListener("click", function() {
+    if (cart.length === 0) {
+        alert("Please add at least one service.");
+        return;
+    }
+
+    servicesScreen.style.display = "none";
+    checkoutScreen.style.display = "block";
+    bottomCart.classList.remove("show");
+
+    updateCart();
+
+    checkoutScreen.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+});
+
+document.getElementById("backBtn").addEventListener("click", function() {
+    checkoutScreen.style.display = "none";
+    servicesScreen.style.display = "block";
+
+    updateCart();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+});
+
+applyCouponBtn.addEventListener("click", function() {
+    const code = couponInput.value.trim().toUpperCase();
+    const sub = subtotal();
+
+    couponMessage.className = "";
+
+    if (!code) {
+        resetCoupon();
+        couponMessage.className = "coupon-error";
+        couponMessage.innerHTML = "⚠ Please enter a coupon code.";
+        updateCart();
+        return;
+    }
+
+    if (code === "RR100" && sub >= 999) {
+        discount = 100;
+        couponCodeHidden.value = code;
+        discountHidden.value = discount;
+        couponMessage.className = "coupon-success";
+        couponMessage.innerHTML =
+            "🎉 Coupon Applied Successfully!<br>You saved <b>₹100</b>";
+        launchCouponConfetti();
+
+    } else if (code === "RR100" && sub < 999) {
+        resetCoupon();
+        couponMessage.className = "coupon-error";
+        couponMessage.innerHTML =
+            "⚠ RR100 is valid only for orders above ₹999.";
+
+    } else {
+        resetCoupon();
+        couponMessage.className = "coupon-error";
+        couponMessage.innerHTML = "❌ Invalid coupon code.";
+    }
+
+    updateCart();
+});
+
+couponInput.addEventListener("input", function() {
+    const code = this.value.trim().toUpperCase();
+
+    if (code !== "RR100") {
+        resetCoupon();
+        couponMessage.className = "";
+        couponMessage.innerHTML = "";
+        updateCart();
+    }
+});
+
+function launchCouponConfetti() {
+    for (let i = 0; i < 45; i++) {
+        const confetti = document.createElement("div");
+
+        confetti.className = "coupon-confetti";
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.animationDelay = Math.random() + "s";
+        confetti.style.background =
+            ["#f5c542", "#ffffff", "#00c853", "#ff5252"][Math.floor(Math.random() * 4)];
+
+        document.body.appendChild(confetti);
+
+        setTimeout(() => {
+            confetti.remove();
+        }, 2600);
+    }
+}
+
+document.querySelectorAll('input[name="payment_choice"]').forEach(input => {
+    input.addEventListener("change", function() {
+        paymentMethodHidden.value = this.value;
+        console.log("Payment Method Selected:", this.value);
+    });
+});
+
+function updateAddress() {
+    fullAddress.value =
+        "Building/Flat: " + buildingNo.value + ", " +
+        "Floor: " + floorNo.value + ", " +
+        "Landmark: " + landmark.value;
+}
+
+[buildingNo, floorNo, landmark].forEach(input => {
+    if (input) {
+        input.addEventListener("input", updateAddress);
+    }
+});
+
+if (useLocationBtn) {
+    useLocationBtn.addEventListener("click", function () {
+        if (!navigator.geolocation) {
+            locationStatus.innerHTML =
+                "❌ Location is not supported by this browser.";
+            return;
+        }
+
+        locationStatus.innerHTML = "⏳ Getting your live location...";
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                latitudeInput.value = lat;
+                longitudeInput.value = lng;
+
+                const mapLink =
+                    "https://www.google.com/maps?q=" + lat + "," + lng;
+
+                locationStatus.innerHTML =
+                    "✅ Live location captured successfully.<br>" +
+                    `<a href="${mapLink}" target="_blank">Preview Location on Google Maps</a>`;
+            },
+            function () {
+                latitudeInput.value = "";
+                longitudeInput.value = "";
+                locationStatus.innerHTML =
+                    "❌ Could not get location. Please allow location access and try again.";
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    });
+}
+
+function filterServices() {
+    const searchValue = serviceSearchInput.value.toLowerCase();
+
+    document.querySelectorAll(".rr-service-card").forEach(card => {
+        const name = card.dataset.name.toLowerCase();
+        const clan = card.dataset.clan;
+        const price = parseFloat(card.dataset.price);
+
+        let matchesSearch = name.includes(searchValue);
+        let matchesFilter = true;
+
+        if (
+            activeFilter === "CARE CLAN" ||
+            activeFilter === "TECH CLAN" ||
+            activeFilter === "FORCE CLAN"
+        ) {
+            matchesFilter = clan === activeFilter;
+        }
+
+        if (activeFilter === "low") {
+            matchesFilter = price < 500;
+        }
+
+        if (activeFilter === "high") {
+            matchesFilter = price >= 500;
+        }
+
+        card.style.display =
+            searchValue === "" && activeFilter === "all"
+            ? "grid"
+            : matchesSearch && matchesFilter
+            ? "grid"
+            : "none";
+    });
+}
+
+if (serviceSearchInput) {
+    serviceSearchInput.addEventListener("input", filterServices);
+}
+
+filterButtons.forEach(button => {
+    button.addEventListener("click", function() {
+        filterButtons.forEach(btn => btn.classList.remove("active"));
+
+        this.classList.add("active");
+        activeFilter = this.dataset.filter;
+
+        filterServices();
+    });
+});
+
+bookingForm.addEventListener("submit", function(e) {
+    updateAddress();
+
+    if (cart.length === 0) {
+        e.preventDefault();
+        alert("Please add at least one service.");
+        return false;
+    }
+
+    if (latitudeInput.value === "" || longitudeInput.value === "") {
+        e.preventDefault();
+
+        alert("📍 Please capture your live location before confirming booking.");
+
+        useLocationBtn.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+        useLocationBtn.focus();
+
+        return false;
+    }
+
+    localStorage.removeItem("rrclan_cart");
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadSavedCart();
+
+    const preselectedId = "{{ selected_service_id or '' }}";
+
+    if (preselectedId) {
+        const card = document.querySelector(
+            `.rr-service-card[data-id="${preselectedId}"]`
+        );
+
+        if (card) {
+            const alreadyExists = cart.find(item => item.id === preselectedId);
+
+            if (!alreadyExists) {
+                addRemoveService(card);
+            }
+        }
+    }
+
+    updateCart();
+    updateAddress();
+});
+</script>
+
+{% endblock %}

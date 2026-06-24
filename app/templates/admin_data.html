@@ -1,0 +1,300 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="data-hero">
+    <p class="hero-tag">RR CLAN PRO ADMIN</p>
+    <h1>Data Center</h1>
+    <p>Manage customers, technicians, services, bookings, ratings and revenue in one place.</p>
+</section>
+
+<section class="data-center">
+
+    <div class="data-stats">
+        <div><span>Customers</span><h2>{{ customers|length }}</h2></div>
+        <div><span>Technicians</span><h2>{{ technicians|length }}</h2></div>
+        <div><span>Services</span><h2>{{ services|length }}</h2></div>
+        <div><span>Bookings</span><h2>{{ bookings|length }}</h2></div>
+    </div>
+
+    <div class="data-tabs">
+        <button onclick="showTab('customers')" class="tab-btn active">Customers</button>
+        <button onclick="showTab('technicians')" class="tab-btn">Technicians</button>
+        <button onclick="showTab('services')" class="tab-btn">Services</button>
+        <button onclick="showTab('bookings')" class="tab-btn">Bookings</button>
+        <button onclick="showTab('ratings')" class="tab-btn">Ratings</button>
+        <button onclick="showTab('revenue')" class="tab-btn">Revenue</button>
+    </div>
+
+    <div class="data-search">
+        <input type="text" id="dataSearch" placeholder="Search data...">
+    </div>
+
+    <div id="customers" class="tab-content active">
+        <h2>Customers</h2>
+
+        <div class="data-table-wrap">
+            <table class="admin-table searchable-table">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Total Bookings</th>
+                    <th>Actions</th>
+                </tr>
+
+                {% for customer in customers %}
+                <tr>
+                    <td>#{{ customer.id }}</td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.phone or "-" }}</td>
+                    <td>{{ customer.customer_bookings|length }}</td>
+
+                    <td>
+                        <a class="small-btn"
+                           href="{{ url_for('customer_history', customer_id=customer.id) }}">
+                            View
+                        </a>
+
+                        <form method="POST"
+                              action="{{ url_for('delete_customer', customer_id=customer.id) }}"
+                              style="display:inline;"
+                              onsubmit="return confirm('Delete this customer and all bookings?');">
+
+                            <button type="submit" class="small-btn danger-btn">
+                                Delete
+                            </button>
+
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div id="technicians" class="tab-content">
+        <h2>Technicians</h2>
+
+        <form method="POST" action="{{ url_for('add_technician') }}" class="add-service-form">
+            <input type="text" name="name" placeholder="Technician Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="text" name="phone" placeholder="Mobile Number" required>
+            <input type="text" name="skill" placeholder="Skill" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Add Technician</button>
+        </form>
+
+        <div class="data-table-wrap">
+            <table class="admin-table searchable-table">
+                <tr>
+                    <th>Name</th>
+                    <th>Skill</th>
+                    <th>Email</th>
+                    <th>Jobs Assigned</th>
+                    <th>Completed</th>
+                </tr>
+
+                {% for tech in technicians %}
+                <tr>
+                    <td>{{ tech.name }}</td>
+                    <td>{{ tech.skill }}</td>
+                    <td>{{ tech.email }}</td>
+                    <td>{{ tech.assigned_jobs|length }}</td>
+                    <td>{{ tech.assigned_jobs|selectattr("status", "equalto", "Completed")|list|length }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div id="services" class="tab-content">
+        <h2>Services</h2>
+
+        <form method="POST"
+              action="{{ url_for('add_service') }}"
+              class="add-service-form">
+
+            <input type="text" name="clan" placeholder="CARE / TECH / FORCE" required>
+            <input type="text" name="category" placeholder="AC Service / Plumbing" required>
+            <input type="text" name="name" placeholder="Service Name" required>
+            <input type="number" name="price" placeholder="Price" required>
+            <input type="text" name="duration" placeholder="Duration" required>
+            <input type="text" name="skill_required" placeholder="Skill Required" required>
+            <input type="text" name="image" placeholder="Image filename" required>
+
+            <textarea
+                name="description"
+                placeholder="Service description"
+                rows="3"
+                required></textarea>
+
+            <button type="submit">
+                Add Service
+            </button>
+
+        </form>
+
+        <div class="data-table-wrap">
+            <table class="admin-table searchable-table">
+                <tr>
+                    <th>Clan</th>
+                    <th>Category</th>
+                    <th>Service</th>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Base Price</th>
+                    <th>GST 18%</th>
+                    <th>Total</th>
+                    <th>Duration</th>
+                    <th>Actions</th>
+                </tr>
+
+                {% for service in services %}
+                <tr>
+                    <td>{{ service.clan }}</td>
+                    <td>{{ service.category }}</td>
+                    <td>{{ service.name }}</td>
+                    <td>{{ service.image }}</td>
+                    <td style="max-width:260px;">{{ service.description }}</td>
+                    <td>₹{{ service.price }}</td>
+                    <td>₹{{ (service.price * 0.18)|round(2) }}</td>
+                    <td>₹{{ (service.price * 1.18)|round(2) }}</td>
+                    <td>{{ service.duration }}</td>
+                    <td>
+                        <form method="POST"
+                              action="{{ url_for('delete_service', service_id=service.id) }}"
+                              onsubmit="return confirm('Delete this service?');">
+
+                            <button type="submit" class="small-btn danger-btn">
+                                Delete
+                            </button>
+
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div id="bookings" class="tab-content">
+        <h2>Bookings</h2>
+
+        <div class="data-table-wrap">
+            <table class="admin-table searchable-table">
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Service</th>
+                    <th>Technician</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                </tr>
+
+                {% for booking in bookings %}
+                <tr>
+                    <td>#RRCP-{{ booking.id }}</td>
+                    <td>{{ booking.customer_name }}</td>
+                    <td>{{ booking.phone }}</td>
+                    <td>{{ booking.service.name }}</td>
+                    <td>{{ booking.technician.name if booking.technician else "Not Assigned" }}</td>
+                    <td>{{ booking.status }}</td>
+                    <td>{{ booking.booking_date }}</td>
+                    <td>₹{{ booking.total_amount or (booking.service.price * 1.18)|round(2) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div id="ratings" class="tab-content">
+        <h2>Ratings & Reviews</h2>
+
+        <div class="data-table-wrap">
+            <table class="admin-table searchable-table">
+                <tr>
+                    <th>Booking</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Rating</th>
+                    <th>Review</th>
+                </tr>
+
+                {% for booking in bookings %}
+                    {% if booking.rating %}
+                    <tr>
+                        <td>#RRCP-{{ booking.id }}</td>
+                        <td>{{ booking.customer_name }}</td>
+                        <td>{{ booking.service.name }}</td>
+                        <td>{{ booking.rating }} ⭐</td>
+                        <td>{{ booking.review or "-" }}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div id="revenue" class="tab-content">
+        <h2>Revenue Summary</h2>
+
+        <div class="revenue-summary-grid">
+            <div>
+                <span>Base Revenue</span>
+                <h2>₹{{ bookings|sum(attribute='service.price') }}</h2>
+            </div>
+
+            <div>
+                <span>GST Estimate</span>
+                <h2>₹{{ (bookings|sum(attribute='service.price') * 0.18)|round(2) }}</h2>
+            </div>
+
+            <div>
+                <span>Total Revenue</span>
+                <h2>₹{{ (bookings|sum(attribute='service.price') * 1.18)|round(2) }}</h2>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+function showTab(tabId) {
+    const tabs = document.querySelectorAll(".tab-content");
+    const buttons = document.querySelectorAll(".tab-btn");
+
+    tabs.forEach(tab => tab.classList.remove("active"));
+    buttons.forEach(btn => btn.classList.remove("active"));
+
+    document.getElementById(tabId).classList.add("active");
+    event.target.classList.add("active");
+
+    document.getElementById("dataSearch").value = "";
+    filterTable("");
+}
+
+const searchInput = document.getElementById("dataSearch");
+
+searchInput.addEventListener("keyup", function () {
+    filterTable(this.value.toLowerCase());
+});
+
+function filterTable(value) {
+    const activeTab = document.querySelector(".tab-content.active");
+    const rows = activeTab.querySelectorAll("table tr");
+
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+
+        const text = row.innerText.toLowerCase();
+
+        row.style.display = text.includes(value) ? "" : "none";
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="hero-clean">
+
+    <div class="hero-clean-left">
+        <p class="hero-tag">BANGALORE HOME & PROPERTY SERVICES</p>
+
+        <h1>Expert home services, delivered fast.</h1>
+
+        <p>
+            Book verified professionals for cleaning, AC repair, plumbing,
+            electrical, pest control, car wash and complete property care.
+        </p>
+
+        <div class="hero-clean-actions">
+            <a href="{{ url_for('book') }}" class="hero-main-btn">Book a Service</a>
+            <a href="{{ url_for('services') }}" class="hero-second-btn">Explore Services</a>
+        </div>
+
+        <div class="hero-mini-stats">
+            <div><b>10K+</b><span>Service Target</span></div>
+            <div><b>500+</b><span>Technicians</span></div>
+            <div><b>4.9★</b><span>Rating Goal</span></div>
+        </div>
+    </div>
+
+    <div class="hero-clean-right">
+
+        <div class="clean-card">
+            <img src="{{ url_for('static', filename='images/services/cleaning.jpg') }}" alt="Cleaning">
+            <h3>Home Cleaning</h3>
+            <p>Starting ₹499 + GST</p>
+        </div>
+
+        <div class="clean-card">
+            <img src="{{ url_for('static', filename='images/services/ac.jpg') }}" alt="AC">
+            <h3>AC Service</h3>
+            <p>Verified technician</p>
+        </div>
+
+        <div class="clean-card">
+            <img src="{{ url_for('static', filename='images/services/plumbing.jpg') }}" alt="Plumbing">
+            <h3>Plumbing</h3>
+            <p>Fast repair support</p>
+        </div>
+
+    </div>
+
+</section>
+</section>
+
+<section class="stats-section">
+    <div>
+        <h2>10,000+</h2>
+        <p>Services Target</p>
+    </div>
+
+    <div>
+        <h2>500+</h2>
+        <p>Technicians Goal</p>
+    </div>
+
+    <div>
+        <h2>24/7</h2>
+        <p>Support Vision</p>
+    </div>
+
+    <div>
+        <h2>4.9★</h2>
+        <p>Customer Rating Goal</p>
+    </div>
+</section>
+<section class="section premium-clan-section">
+    <div class="section-head center">
+        <p class="eyebrow">Select Services</p>
+        <h2>Choose your clan and book directly</h2>
+    </div>
+
+    <div class="premium-clan-grid">
+
+        <div class="premium-clan-card care-card">
+            <div class="clan-overlay"></div>
+            <div class="clan-content">
+                <span>🧹 CARE CLAN</span>
+                <h3>Home Comfort Services</h3>
+                <p>Cleaning, laundry and doorstep car wash for daily comfort.</p>
+                <a href="{{ url_for('services') }}" class="clan-btn">Explore Services</a>
+            </div>
+        </div>
+
+        <div class="premium-clan-card tech-card">
+            <div class="clan-overlay"></div>
+            <div class="clan-content">
+                <span>🔧 TECH CLAN</span>
+                <h3>Repair & Technical Experts</h3>
+                <p>Plumbing, electrical and AC repair by skilled technicians.</p>
+                <a href="{{ url_for('services') }}" class="clan-btn">Explore Services</a>
+            </div>
+        </div>
+
+        <div class="premium-clan-card force-card">
+            <div class="clan-overlay"></div>
+            <div class="clan-content">
+                <span>🌿 FORCE CLAN</span>
+                <h3>Outdoor & Heavy Work</h3>
+                <p>Pest control, gardening and waste removal for property care.</p>
+                <a href="{{ url_for('services') }}" class="clan-btn">Explore Services</a>
+            </div>
+        </div>
+    </div>
+</section>
+    <section class="section premium-process-section">
+    <div class="section-head center">
+        <p class="eyebrow light">How To Book</p>
+        <h2>Book your service in 4 simple steps</h2>
+    </div>
+
+    <div class="premium-process-grid">
+
+        <div class="premium-step-card">
+            <div class="step-badge">01</div>
+            <div class="step-icon">🛠️</div>
+            <h3>Select Service</h3>
+            <p>Choose the right clan and service for your home or property.</p>
+        </div>
+
+        <div class="premium-step-card">
+            <div class="step-badge">02</div>
+            <div class="step-icon">📍</div>
+            <h3>Enter Details</h3>
+            <p>Add your address, preferred date, time and service notes.</p>
+        </div>
+
+        <div class="premium-step-card">
+            <div class="step-badge">03</div>
+            <div class="step-icon">👨‍🔧</div>
+            <h3>Get Technician</h3>
+            <p>Admin assigns a verified technician based on skill and availability.</p>
+        </div>
+
+        <div class="premium-step-card">
+            <div class="step-badge">04</div>
+            <div class="step-icon">✅</div>
+            <h3>Work Completed</h3>
+            <p>Technician visits, completes the work and customer rates the service.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section premium-trust-section">
+    <div class="section-head center">
+        <p class="eyebrow">Customer Trust</p>
+        <h2>Built for professional service experience</h2>
+    </div>
+
+    <div class="trust-grid">
+
+        <div class="premium-trust-card">
+            <div class="trust-stars">★★★★★</div>
+            <p>“Easy booking, clean service flow and technician tracking makes this feel professional.”</p>
+            <div class="trust-user">
+                <div class="trust-avatar">H</div>
+                <div>
+                    <h4>Home Customer</h4>
+                    <span>Verified Booking</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-trust-card featured-trust">
+            <div class="trust-stars">★★★★★</div>
+            <p>“The clan system makes services simple to understand and easy to book.”</p>
+            <div class="trust-user">
+                <div class="trust-avatar">P</div>
+                <div>
+                    <h4>Property Owner</h4>
+                    <span>Repeat Customer</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-trust-card">
+            <div class="trust-stars">★★★★★</div>
+            <p>“Admin assignment and technician dashboard gives proper operational control.”</p>
+            <div class="trust-user">
+                <div class="trust-avatar">B</div>
+                <div>
+                    <h4>Business Client</h4>
+                    <span>Commercial Service</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="section ultra-why-section">
+
+    <div class="why-bg-orb orb-one"></div>
+    <div class="why-bg-orb orb-two"></div>
+
+    <div class="section-head center">
+        <p class="eyebrow light">Why Choose Us</p>
+        <h2>Premium service experience<br>from booking to completion</h2>
+    </div>
+
+    <div class="ultra-why-grid">
+
+        <div class="ultra-why-card">
+            <div class="shine"></div>
+            <div class="ultra-icon">✓</div>
+            <h3>Verified Technicians</h3>
+            <p>Trusted professionals approved before taking jobs.</p>
+        </div>
+
+        <div class="ultra-why-card">
+            <div class="shine"></div>
+            <div class="ultra-icon">⚡</div>
+            <h3>Fast Service</h3>
+            <p>Quick assignment and rapid response times.</p>
+        </div>
+
+        <div class="ultra-why-card">
+            <div class="shine"></div>
+            <div class="ultra-icon">₹</div>
+            <h3>Transparent Pricing</h3>
+            <p>Clear GST, pricing and final payable amount.</p>
+        </div>
+
+        <div class="ultra-why-card">
+            <div class="shine"></div>
+            <div class="ultra-icon">🛡️</div>
+            <h3>Quality Guarantee</h3>
+            <p>Professional standards on every booking.</p>
+        </div>
+
+        <div class="ultra-why-card">
+            <div class="shine"></div>
+            <div class="ultra-icon">📱</div>
+            <h3>WhatsApp Support</h3>
+            <p>Instant updates and service communication.</p>
+        </div>
+
+        <div class="ultra-why-card">
+            <div class="shine"></div>
+            <div class="ultra-icon">🏠</div>
+            <h3>Complete Home Care</h3>
+            <p>Cleaning, repairs and property maintenance together.</p>
+        </div>
+
+    </div>
+
+</section>
+<section class="section premium-tech-section">
+    <div class="tech-glow glow-left"></div>
+    <div class="tech-glow glow-right"></div>
+
+    <div class="section-head center">
+        <p class="eyebrow light">Meet Our Experts</p>
+        <h2>Skilled technicians ready for<br>every service</h2>
+    </div>
+
+    <div class="premium-tech-grid">
+        <div class="premium-tech-card">
+            <div class="tech-avatar">🚰</div>
+            <h3>Imran</h3>
+            <p>Plumbing Expert</p>
+            <span>⭐ 4.8 • 180+ Jobs</span>
+        </div>
+
+        <div class="premium-tech-card">
+            <div class="tech-avatar">❄️</div>
+            <h3>Sameer</h3>
+            <p>AC Specialist</p>
+            <span>⭐ 4.9 • 220+ Jobs</span>
+        </div>
+
+        <div class="premium-tech-card">
+            <div class="tech-avatar">⚡</div>
+            <h3>Arjun</h3>
+            <p>Electrical Technician</p>
+            <span>⭐ 4.7 • 150+ Jobs</span>
+        </div>
+
+        <div class="premium-tech-card">
+            <div class="tech-avatar">🧹</div>
+            <h3>Rahul</h3>
+            <p>Cleaning Specialist</p>
+            <span>⭐ 4.8 • 210+ Jobs</span>
+        </div>
+    </div>
+</section>
+
+<section class="section premium-reviews-section">
+    <div class="section-head center">
+        <p class="eyebrow">Customer Reviews</p>
+        <h2>Trusted by homeowners<br>across Bangalore</h2>
+    </div>
+
+    <div class="review-marquee">
+        <div class="review-track">
+            <div class="premium-review-card">
+                <div class="review-stars">★★★★★</div>
+                <p>Excellent service. Technician arrived on time and completed the work professionally.</p>
+                <h4>Rahul S.</h4>
+            </div>
+
+            <div class="premium-review-card">
+                <div class="review-stars">★★★★★</div>
+                <p>Booking was easy and pricing was transparent. Highly recommended.</p>
+                <h4>Priya M.</h4>
+            </div>
+
+            <div class="premium-review-card">
+                <div class="review-stars">★★★★★</div>
+                <p>Very professional team. The cleaning service exceeded expectations.</p>
+                <h4>Amit K.</h4>
+            </div>
+
+            <div class="premium-review-card">
+                <div class="review-stars">★★★★★</div>
+                <p>Quick assignment and smooth technician tracking experience.</p>
+                <h4>Neha R.</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="premium-final-cta">
+    <div class="cta-orb"></div>
+    <h2>Start with one booking.<br>Scale into a full service ecosystem.</h2>
+    <a href="{{ url_for('book') }}" class="premium-cta-btn">Book Service Now</a>
+</section>
+
+<a class="whatsapp-float" href="https://wa.me/9108277711" target="_blank">WhatsApp</a>
+
+<script>
+const searchInput = document.getElementById("serviceSearch");
+const searchBtn = document.getElementById("searchBtn");
+const services = document.querySelectorAll(".searchable-service");
+
+function searchServices() {
+    let value = searchInput.value.toLowerCase();
+
+    services.forEach(function (service) {
+        let text = service.innerText.toLowerCase();
+
+        if (text.includes(value)) {
+            service.style.display = "flex";
+        } else {
+            service.style.display = "none";
+        }
+    });
+
+    document.getElementById("servicesGrid").scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+if (searchBtn) {
+    searchBtn.addEventListener("click", searchServices);
+}
+
+if (searchInput) {
+    searchInput.addEventListener("keyup", function (event) {
+        if (event.key === "Enter") {
+            searchServices();
+        }
+    });
+}
+</script>
+
+{% endblock %}
