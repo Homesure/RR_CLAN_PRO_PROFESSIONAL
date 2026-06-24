@@ -108,7 +108,9 @@
                     <input type="text" id="couponInput" placeholder="Enter coupon code">
                     <button type="button" id="applyCouponBtn">Apply</button>
                 </div>
-                <p class="rr-hint">Try RR100 for ₹100 off above ₹999.</p>
+                <p class="rr-hint">
+    Use BIRTHDAY20 for 20% OFF or RR100 for ₹100 off above ₹999.
+</p>
                 <p id="couponMessage"></p>
             </div>
 
@@ -153,7 +155,6 @@
                     Online payments will open Razorpay secure checkout after booking confirmation.
                 </p>
             </div>
-
             <div class="rr-check-card">
                 <h2>Customer Details</h2>
 
@@ -400,7 +401,7 @@ function updateCart() {
     let sub = subtotal();
     let code = couponInput.value.trim().toUpperCase();
 
-    if (code !== "RR100" || sub < 999) {
+    if (code !== "RR100" && code !== "BIRTHDAY20") {
         resetCoupon();
     }
 
@@ -593,7 +594,7 @@ document.getElementById("backBtn").addEventListener("click", function() {
     });
 });
 
-applyCouponBtn.addEventListener("click", function() {
+function applyCouponCode() {
     const code = couponInput.value.trim().toUpperCase();
     const sub = subtotal();
 
@@ -601,45 +602,87 @@ applyCouponBtn.addEventListener("click", function() {
 
     if (!code) {
         resetCoupon();
+
         couponMessage.className = "coupon-error";
         couponMessage.innerHTML = "⚠ Please enter a coupon code.";
+
+        updateCart();
+        return;
+    }
+
+    if (cart.length === 0) {
+        resetCoupon();
+
+        couponMessage.className = "coupon-error";
+        couponMessage.innerHTML = "⚠ Please add a service before applying coupon.";
+
+        updateCart();
+        return;
+    }
+
+    if (code === "BIRTHDAY20") {
+        discount = sub * 0.20;
+
+        couponCodeHidden.value = code;
+        discountHidden.value = discount.toFixed(0);
+
+        couponMessage.className = "coupon-success";
+        couponMessage.innerHTML =
+            "🎉 Birthday Offer Applied!<br>You saved <b>20%</b>";
+
+        launchCouponConfetti();
         updateCart();
         return;
     }
 
     if (code === "RR100" && sub >= 999) {
         discount = 100;
+
         couponCodeHidden.value = code;
         discountHidden.value = discount;
+
         couponMessage.className = "coupon-success";
         couponMessage.innerHTML =
             "🎉 Coupon Applied Successfully!<br>You saved <b>₹100</b>";
-        launchCouponConfetti();
 
-    } else if (code === "RR100" && sub < 999) {
+        launchCouponConfetti();
+        updateCart();
+        return;
+    }
+
+    if (code === "RR100" && sub < 999) {
         resetCoupon();
+
         couponMessage.className = "coupon-error";
         couponMessage.innerHTML =
             "⚠ RR100 is valid only for orders above ₹999.";
 
-    } else {
-        resetCoupon();
-        couponMessage.className = "coupon-error";
-        couponMessage.innerHTML = "❌ Invalid coupon code.";
+        updateCart();
+        return;
     }
 
+    resetCoupon();
+
+    couponMessage.className = "coupon-error";
+    couponMessage.innerHTML = "❌ Invalid coupon code.";
+
     updateCart();
+}
+
+applyCouponBtn.addEventListener("click", function() {
+    applyCouponCode();
 });
 
 couponInput.addEventListener("input", function() {
     const code = this.value.trim().toUpperCase();
 
-    if (code !== "RR100") {
+    if (code !== "RR100" && code !== "BIRTHDAY20") {
         resetCoupon();
         couponMessage.className = "";
         couponMessage.innerHTML = "";
-        updateCart();
     }
+
+    updateCart();
 });
 
 function launchCouponConfetti() {

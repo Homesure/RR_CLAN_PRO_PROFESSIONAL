@@ -6608,3 +6608,56 @@ textarea:focus {
 .rr-offer-btn:hover{
     transform:translateY(-3px);
 }
+.birthday-offer-section{
+    padding:60px 7%;
+    background:#f7f7f7;
+}
+
+.birthday-offer-card{
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:40px;
+    align-items:center;
+    background:#050505;
+    color:#fff;
+    border-radius:30px;
+    padding:45px;
+    box-shadow:0 20px 60px rgba(0,0,0,.18);
+}
+
+.birthday-offer-text h2{
+    font-size:42px;
+    margin:10px 0;
+}
+
+.birthday-offer-text p{
+    color:#ddd;
+    line-height:1.7;
+}
+
+.offer-code-box{
+    display:inline-block;
+    margin:20px 0;
+    padding:14px 22px;
+    background:#d4af37;
+    color:#000;
+    border-radius:50px;
+    font-weight:900;
+}
+
+.birthday-offer-image img{
+    width:100%;
+    border-radius:50%;
+    border:6px solid #d4af37;
+}
+
+@media(max-width:900px){
+    .birthday-offer-card{
+        grid-template-columns:1fr;
+        text-align:center;
+    }
+
+    .birthday-offer-text h2{
+        font-size:30px;
+    }
+}
