@@ -6890,3 +6890,46 @@ textarea:focus {
     display:none;
     z-index:99999;
 }
+body{
+    overflow-x:hidden;
+}
+
+.hero-new,
+.home-hero,
+.hero{
+    max-width:1200px;
+    margin:0 auto;
+    padding-left:7%;
+    padding-right:7%;
+}
+
+.hero-new{
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:60px;
+    align-items:center;
+}
+
+.hero-service-grid,
+.hero-card-grid{
+    max-width:420px;
+}
+
+.hero-service-card img,
+.hero-card img{
+    width:100%;
+    height:160px;
+    object-fit:cover;
+}
+
+@media(max-width:900px){
+    .hero-new{
+        grid-template-columns:1fr;
+        gap:30px;
+    }
+
+    .hero-service-grid,
+    .hero-card-grid{
+        max-width:100%;
+    }
+}
