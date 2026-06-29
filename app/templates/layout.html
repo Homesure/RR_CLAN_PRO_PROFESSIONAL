@@ -49,6 +49,26 @@ if ("serviceWorker" in navigator) {
 <button id="installAppBtn" class="install-app-btn">
     Install RR CLAN PRO
 </button>
+<script>
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    document.getElementById("installAppBtn").style.display = "block";
+});
+
+document.getElementById("installAppBtn").addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+
+    await deferredPrompt.userChoice;
+
+    deferredPrompt = null;
+});
+</script>
 <body>
 
 <nav class="navbar">

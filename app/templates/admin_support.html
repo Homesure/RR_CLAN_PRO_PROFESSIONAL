@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="admin-clean-header">
+    <p class="hero-tag">SUPPORT CENTER</p>
+    <h1>Customer Support Tickets</h1>
+    <p>View customer complaints, reply and resolve issues.</p>
+</section>
+
+<section class="admin-clean-section">
+
+    {% if tickets %}
+    <div class="customer-booking-list">
+
+        {% for ticket in tickets %}
+        <div class="customer-booking-card">
+
+            <div class="customer-booking-header">
+                <div>
+                    <span class="booking-id">#TICKET-{{ ticket.id }}</span>
+                    <h3>{{ ticket.subject }}</h3>
+                    <p>{{ ticket.customer.name }} • {{ ticket.customer.phone }}</p>
+                </div>
+
+                <span class="clean-status">{{ ticket.status }}</span>
+            </div>
+
+            <div class="booking-info-grid">
+                <p><b>Customer</b><br>{{ ticket.customer.name }}</p>
+                <p><b>Phone</b><br>{{ ticket.customer.phone }}</p>
+                <p><b>Booking ID</b><br>
+                    {% if ticket.booking_id %}
+                        #RRCP-{{ ticket.booking_id }}
+                    {% else %}
+                        General
+                    {% endif %}
+                </p>
+                <p><b>Date</b><br>{{ ticket.created_at.strftime("%d-%m-%Y %I:%M %p") }}</p>
+            </div>
+
+            <div class="customer-booking-body">
+                <p><b>Message:</b></p>
+                <p>{{ ticket.message }}</p>
+
+                {% if ticket.admin_reply %}
+                    <div class="customer-alert success-box">
+                        <b>Admin Reply:</b><br>
+                        {{ ticket.admin_reply }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if ticket.status != "Resolved" %}
+            <form method="POST" action="{{ url_for('reply_ticket', ticket_id=ticket.id) }}" class="rating-form">
+                <label>Reply to Customer</label>
+                <textarea name="reply" required placeholder="Write your reply..."></textarea>
+                <button type="submit" class="btn">Reply & Resolve</button>
+            </form>
+            {% else %}
+            <div class="customer-alert success-box">
+                ✅ Ticket resolved
+            </div>
+            {% endif %}
+
+            <div class="customer-actions">
+                <a class="btn-outline" href="tel:{{ ticket.customer.phone }}">Call Customer</a>
+
+                <a class="btn-outline" target="_blank"
+                   href="https://wa.me/91{{ ticket.customer.phone }}?text=Hello%20{{ ticket.customer.name }}%2C%20this%20is%20RR%20CLAN%20PRO%20support.%20We%20are%20checking%20your%20support%20ticket.">
+                    WhatsApp
+                </a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="empty classy-empty">
+        <h2>No support tickets</h2>
+        <p>Customer complaints and support requests will appear here.</p>
+    </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}

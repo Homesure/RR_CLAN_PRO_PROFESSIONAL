@@ -2,6 +2,9 @@
 {% block content %}
 
 <section class="hero-clean">
+    <div class="hero-brand-logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}">
+</div>
 
     <div class="hero-clean-left">
         <p class="hero-tag">BANGALORE HOME & PROPERTY SERVICES</p>
@@ -48,6 +51,30 @@
     </div>
 
 </section>
+</section>
+<section class="birthday-offer-section">
+    <div class="birthday-offer-card">
+        <div class="birthday-offer-text">
+            <p class="hero-tag">BIRTHDAY SPECIAL OFFER</p>
+            <h2>Flat 20% OFF on Your First Booking</h2>
+            <p>
+                Celebrate Afnan Shariff's birthday with RR CLAN PRO.
+                Book trusted home and property services in Bangalore.
+            </p>
+
+            <div class="offer-code-box">
+                Use Code: <b>BIRTHDAY20</b>
+            </div>
+
+            <a href="{{ url_for('book') }}" class="hero-main-btn">
+                Book Now
+            </a>
+        </div>
+
+        <div class="birthday-offer-image">
+            <img src="{{ url_for('static', filename='images/birthday-offer.png') }}" alt="RR CLAN PRO Birthday Offer">
+        </div>
+    </div>
 </section>
 
 <section class="stats-section">
