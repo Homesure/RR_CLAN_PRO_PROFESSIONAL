@@ -6,6 +6,7 @@
     <h1>What are you looking for?</h1>
     <p>Choose a service category, view packages, check details and book instantly.</p>
 </section>
+
 <section class="rr-special-offer">
 
     <div class="rr-offer-badge">
@@ -31,7 +32,6 @@
 
         <div class="rr-offer-box popular">
             <div class="popular-tag">MOST BOOKED</div>
-
             <h3>2 BHK</h3>
             <h1>₹2,999</h1>
             <p>Deep Cleaning</p>
@@ -57,6 +57,7 @@
 
     {% for clan, categories in service_data.items() %}
     <div class="uc-clan-block">
+
         <div class="uc-clan-head">
             <p>{{ clan }}</p>
             <h2>{{ clan }} Services</h2>
@@ -66,41 +67,27 @@
 
             {% for category, services in categories.items() %}
 
-            {% set modal_id = "cat-" ~ loop.index ~ "-" ~ category|replace(" ", "-") %}
-
-            {% set cat = category|lower %}
-            {% if "ac" in cat %}
-                {% set image_file = "ac.jpg" %}
-            {% elif "car" in cat %}
-                {% set image_file = "carwash.jpg" %}
-            {% elif "laundry" in cat %}
-                {% set image_file = "laundry.jpg" %}
-            {% elif "plumb" in cat %}
-                {% set image_file = "plumbing.jpg" %}
-            {% elif "electric" in cat or "geyser" in cat or "cctv" in cat %}
-                {% set image_file = "electrical.jpg" %}
-            {% elif "pest" in cat %}
-                {% set image_file = "pest.jpg" %}
-            {% elif "garden" in cat %}
-                {% set image_file = "garden.jpg" %}
-            {% elif "waste" in cat %}
-                {% set image_file = "waste.jpg" %}
-            {% else %}
-                {% set image_file = "cleaning.jpg" %}
-            {% endif %}
+            {% set modal_id = "cat-" ~ clan|replace(" ", "-") ~ "-" ~ loop.index %}
+            {% set first_service = services[0] %}
+            {% set category_image = first_service.image or "default.jpg" %}
 
             <div class="uc-category-card" onclick="openCategory('{{ modal_id }}')">
 
                 <div class="uc-category-img category-image-box">
-                    <img src="{{ url_for('static', filename='images/services/' ~ image_file) }}" alt="{{ category }}">
+                    <img
+                        src="{{ url_for('static', filename='images/services/' ~ category_image) }}"
+                        alt="{{ category }}">
                 </div>
 
                 <h3>{{ category }}</h3>
                 <p>{{ services|length }} services available</p>
+
             </div>
+
             {% endfor %}
 
         </div>
+
     </div>
     {% endfor %}
 
@@ -109,7 +96,8 @@
 
 {% for clan, categories in service_data.items() %}
     {% for category, services in categories.items() %}
-    {% set modal_id = "cat-" ~ loop.index ~ "-" ~ category|replace(" ", "-") %}
+
+    {% set modal_id = "cat-" ~ clan|replace(" ", "-") ~ "-" ~ loop.index %}
 
     <div class="uc-modal category-modal" id="{{ modal_id }}">
         <div class="uc-modal-box">
@@ -128,26 +116,7 @@
 
                 {% for service in services %}
 
-                {% set s = service.name|lower %}
-                {% if "ac" in s %}
-                    {% set service_image = "ac.jpg" %}
-                {% elif "car" in s %}
-                    {% set service_image = "carwash.jpg" %}
-                {% elif "laundry" in s or "iron" in s %}
-                    {% set service_image = "laundry.jpg" %}
-                {% elif "plumb" in s %}
-                    {% set service_image = "plumbing.jpg" %}
-                {% elif "electric" in s or "geyser" in s or "cctv" in s %}
-                    {% set service_image = "electrical.jpg" %}
-                {% elif "pest" in s %}
-                    {% set service_image = "pest.jpg" %}
-                {% elif "garden" in s or "landscape" in s %}
-                    {% set service_image = "garden.jpg" %}
-                {% elif "waste" in s or "trash" in s %}
-                    {% set service_image = "waste.jpg" %}
-                {% else %}
-                    {% set service_image = "cleaning.jpg" %}
-                {% endif %}
+                {% set service_image = service.image or "default.jpg" %}
 
                 <div class="uc-package-card">
 
@@ -178,7 +147,9 @@
 
                     <div class="uc-package-right">
                         <div class="uc-service-img">
-                            <img src="{{ url_for('static', filename='images/services/' ~ service_image) }}" alt="{{ service.name }}">
+                            <img
+                                src="{{ url_for('static', filename='images/services/' ~ service_image) }}"
+                                alt="{{ service.name }}">
                         </div>
 
                         {% if current_user.is_authenticated and current_user.role == "customer" %}
@@ -189,6 +160,7 @@
                     </div>
 
                 </div>
+
                 {% endfor %}
 
             </div>
@@ -199,30 +171,12 @@
     {% endfor %}
 {% endfor %}
 
+
 {% for clan, categories in service_data.items() %}
     {% for category, services in categories.items() %}
         {% for service in services %}
 
-        {% set s = service.name|lower %}
-        {% if "ac" in s %}
-            {% set detail_image = "ac.jpg" %}
-        {% elif "car" in s %}
-            {% set detail_image = "carwash.jpg" %}
-        {% elif "laundry" in s or "iron" in s %}
-            {% set detail_image = "laundry.jpg" %}
-        {% elif "plumb" in s %}
-            {% set detail_image = "plumbing.jpg" %}
-        {% elif "electric" in s or "geyser" in s or "cctv" in s %}
-            {% set detail_image = "electrical.jpg" %}
-        {% elif "pest" in s %}
-            {% set detail_image = "pest.jpg" %}
-        {% elif "garden" in s or "landscape" in s %}
-            {% set detail_image = "garden.jpg" %}
-        {% elif "waste" in s or "trash" in s %}
-            {% set detail_image = "waste.jpg" %}
-        {% else %}
-            {% set detail_image = "cleaning.jpg" %}
-        {% endif %}
+        {% set detail_image = service.image or "default.jpg" %}
 
         <div class="uc-modal details-modal" id="details-{{ service.id }}">
             <div class="uc-details-box">
@@ -230,7 +184,9 @@
                 <button class="uc-close" onclick="closeDetails(this)">×</button>
 
                 <div class="uc-details-banner">
-                    <img src="{{ url_for('static', filename='images/services/' ~ detail_image) }}" alt="{{ service.name }}">
+                    <img
+                        src="{{ url_for('static', filename='images/services/' ~ detail_image) }}"
+                        alt="{{ service.name }}">
                 </div>
 
                 <div class="uc-details-content">

@@ -4,7 +4,7 @@
 <section class="data-hero">
     <p class="hero-tag">RR CLAN PRO ADMIN</p>
     <h1>Data Center</h1>
-    <p>Manage customers, technicians, services, bookings, ratings and revenue in one place.</p>
+    <p>Manage customers, technicians, services, images, bookings, ratings and revenue in one place.</p>
 </section>
 
 <section class="data-center">
@@ -17,12 +17,12 @@
     </div>
 
     <div class="data-tabs">
-        <button onclick="showTab('customers')" class="tab-btn active">Customers</button>
-        <button onclick="showTab('technicians')" class="tab-btn">Technicians</button>
-        <button onclick="showTab('services')" class="tab-btn">Services</button>
-        <button onclick="showTab('bookings')" class="tab-btn">Bookings</button>
-        <button onclick="showTab('ratings')" class="tab-btn">Ratings</button>
-        <button onclick="showTab('revenue')" class="tab-btn">Revenue</button>
+        <button onclick="showTab('customers', event)" class="tab-btn active">Customers</button>
+        <button onclick="showTab('technicians', event)" class="tab-btn">Technicians</button>
+        <button onclick="showTab('services', event)" class="tab-btn">Services</button>
+        <button onclick="showTab('bookings', event)" class="tab-btn">Bookings</button>
+        <button onclick="showTab('ratings', event)" class="tab-btn">Ratings</button>
+        <button onclick="showTab('revenue', event)" class="tab-btn">Revenue</button>
     </div>
 
     <div class="data-search">
@@ -50,22 +50,14 @@
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.phone or "-" }}</td>
                     <td>{{ customer.customer_bookings|length }}</td>
-
                     <td>
-                        <a class="small-btn"
-                           href="{{ url_for('customer_history', customer_id=customer.id) }}">
-                            View
-                        </a>
+                        <a class="small-btn" href="{{ url_for('customer_history', customer_id=customer.id) }}">View</a>
 
                         <form method="POST"
                               action="{{ url_for('delete_customer', customer_id=customer.id) }}"
                               style="display:inline;"
                               onsubmit="return confirm('Delete this customer and all bookings?');">
-
-                            <button type="submit" class="small-btn danger-btn">
-                                Delete
-                            </button>
-
+                            <button type="submit" class="small-btn danger-btn">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -94,6 +86,7 @@
                     <th>Email</th>
                     <th>Jobs Assigned</th>
                     <th>Completed</th>
+                    <th>Actions</th>
                 </tr>
 
                 {% for tech in technicians %}
@@ -103,6 +96,16 @@
                     <td>{{ tech.email }}</td>
                     <td>{{ tech.assigned_jobs|length }}</td>
                     <td>{{ tech.assigned_jobs|selectattr("status", "equalto", "Completed")|list|length }}</td>
+                    <td>
+                        <form method="POST"
+                              action="{{ url_for('force_delete_technician', technician_id=tech.id) }}"
+                              style="display:inline;"
+                              onsubmit="return confirm('Force delete this technician? Assigned jobs will move back to Pending.');">
+                            <button type="submit" class="small-btn danger-btn">
+                                Force Delete
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </table>
@@ -112,17 +115,24 @@
     <div id="services" class="tab-content">
         <h2>Services</h2>
 
+        <div class="admin-help-box">
+            <b>Image Guide:</b>
+            Upload service images inside <b>app/static/images/services/</b>.
+            Then enter only the filename below, for example:
+            <b>home-cleaning.jpg</b>, <b>plumbing.jpg</b>, <b>ac-service.jpg</b>.
+        </div>
+
         <form method="POST"
               action="{{ url_for('add_service') }}"
               class="add-service-form">
 
-            <input type="text" name="clan" placeholder="CARE / TECH / FORCE" required>
-            <input type="text" name="category" placeholder="AC Service / Plumbing" required>
+            <input type="text" name="clan" placeholder="CARE CLAN / TECH CLAN / FORCE CLAN" required>
+            <input type="text" name="category" placeholder="Category e.g. Deep Cleaning" required>
             <input type="text" name="name" placeholder="Service Name" required>
             <input type="number" name="price" placeholder="Price" required>
             <input type="text" name="duration" placeholder="Duration" required>
             <input type="text" name="skill_required" placeholder="Skill Required" required>
-            <input type="text" name="image" placeholder="Image filename" required>
+            <input type="text" name="image" placeholder="Image filename e.g. home-cleaning.jpg" value="default.jpg">
 
             <textarea
                 name="description"
@@ -130,47 +140,81 @@
                 rows="3"
                 required></textarea>
 
-            <button type="submit">
-                Add Service
-            </button>
-
+            <button type="submit">Add Service</button>
         </form>
 
         <div class="data-table-wrap">
             <table class="admin-table searchable-table">
                 <tr>
+                    <th>Preview</th>
                     <th>Clan</th>
                     <th>Category</th>
                     <th>Service</th>
-                    <th>Image</th>
+                    <th>Image Filename</th>
                     <th>Description</th>
                     <th>Base Price</th>
                     <th>GST 18%</th>
                     <th>Total</th>
                     <th>Duration</th>
-                    <th>Actions</th>
+                    <th>Update</th>
+                    <th>Force Delete</th>
                 </tr>
 
                 {% for service in services %}
                 <tr>
-                    <td>{{ service.clan }}</td>
-                    <td>{{ service.category }}</td>
-                    <td>{{ service.name }}</td>
-                    <td>{{ service.image }}</td>
-                    <td style="max-width:260px;">{{ service.description }}</td>
-                    <td>₹{{ service.price }}</td>
-                    <td>₹{{ (service.price * 0.18)|round(2) }}</td>
-                    <td>₹{{ (service.price * 1.18)|round(2) }}</td>
-                    <td>{{ service.duration }}</td>
+                    <form method="POST" action="{{ url_for('update_service', service_id=service.id) }}">
+                        <td>
+                            <img
+                                class="admin-service-thumb"
+                                src="{{ url_for('static', filename='images/services/' + (service.image or 'default.jpg')) }}"
+                                alt="{{ service.name }}">
+                        </td>
+
+                        <td>
+                            <input type="text" name="clan" value="{{ service.clan }}" required>
+                        </td>
+
+                        <td>
+                            <input type="text" name="category" value="{{ service.category }}" required>
+                        </td>
+
+                        <td>
+                            <input type="text" name="name" value="{{ service.name }}" required>
+                        </td>
+
+                        <td>
+                            <input type="text" name="image" value="{{ service.image or 'default.jpg' }}" required>
+                        </td>
+
+                        <td>
+                            <textarea name="description" rows="3" required>{{ service.description }}</textarea>
+                        </td>
+
+                        <td>
+                            <input type="number" name="price" value="{{ service.price }}" required>
+                        </td>
+
+                        <td>₹{{ (service.price * 0.18)|round(2) }}</td>
+                        <td>₹{{ (service.price * 1.18)|round(2) }}</td>
+
+                        <td>
+                            <input type="text" name="duration" value="{{ service.duration }}" required>
+                            <input type="hidden" name="skill_required" value="{{ service.skill_required }}">
+                        </td>
+
+                        <td>
+                            <button type="submit" class="small-btn">Save</button>
+                        </td>
+                    </form>
+
                     <td>
                         <form method="POST"
-                              action="{{ url_for('delete_service', service_id=service.id) }}"
-                              onsubmit="return confirm('Delete this service?');">
-
+                              action="{{ url_for('force_delete_service', service_id=service.id) }}"
+                              style="display:inline;"
+                              onsubmit="return confirm('Force delete this service and all related bookings permanently?');">
                             <button type="submit" class="small-btn danger-btn">
-                                Delete
+                                Force Delete
                             </button>
-
                         </form>
                     </td>
                 </tr>
@@ -263,7 +307,7 @@
 </section>
 
 <script>
-function showTab(tabId) {
+function showTab(tabId, event) {
     const tabs = document.querySelectorAll(".tab-content");
     const buttons = document.querySelectorAll(".tab-btn");
 
@@ -271,7 +315,10 @@ function showTab(tabId) {
     buttons.forEach(btn => btn.classList.remove("active"));
 
     document.getElementById(tabId).classList.add("active");
-    event.target.classList.add("active");
+
+    if (event) {
+        event.target.classList.add("active");
+    }
 
     document.getElementById("dataSearch").value = "";
     filterTable("");
@@ -279,12 +326,17 @@ function showTab(tabId) {
 
 const searchInput = document.getElementById("dataSearch");
 
-searchInput.addEventListener("keyup", function () {
-    filterTable(this.value.toLowerCase());
-});
+if (searchInput) {
+    searchInput.addEventListener("keyup", function () {
+        filterTable(this.value.toLowerCase());
+    });
+}
 
 function filterTable(value) {
     const activeTab = document.querySelector(".tab-content.active");
+
+    if (!activeTab) return;
+
     const rows = activeTab.querySelectorAll("table tr");
 
     rows.forEach((row, index) => {

@@ -58,20 +58,13 @@
              data-duration="{{ service.duration }}"
              data-clan="{{ service.clan }}"
              data-skill="{{ service.skill_required }}"
-             data-description="{{ service.description }}">
+             data-description="{{ service.description }}"
+             data-image="{{ service.image or 'default.jpg' }}">
 
-            <div class="rr-service-icon">
-                {% if "Cleaning" in service.name %}🧹
-                {% elif "Laundry" in service.name %}👕
-                {% elif "Car Wash" in service.name %}🚗
-                {% elif "Plumbing" in service.name %}🚰
-                {% elif "Electrical" in service.name %}⚡
-                {% elif "AC" in service.name %}❄️
-                {% elif "Pest" in service.name %}🐜
-                {% elif "Landscaping" in service.name %}🌿
-                {% elif "Waste" in service.name %}🗑️
-                {% else %}🛠️
-                {% endif %}
+            <div class="rr-service-image">
+                <img
+                    src="{{ url_for('static', filename='images/services/' ~ (service.image or 'default.jpg')) }}"
+                    alt="{{ service.name }}">
             </div>
 
             <div class="rr-service-info">
@@ -242,13 +235,18 @@
 
         <div class="uc-modal-top">
             <div class="uc-modal-header">
-                <p>CARE CLAN</p>
+                <p id="modalServiceClan">RR CLAN PRO</p>
                 <h2 id="modalServiceName">Service Name</h2>
                 <span id="modalServiceMeta">₹499 • 2-4 Hours</span>
             </div>
         </div>
 
-        <div class="modal-icon" id="modalIcon">🛠️</div>
+        <div class="modal-image">
+            <img
+                id="modalImage"
+                src="{{ url_for('static', filename='images/services/default.jpg') }}"
+                alt="Service">
+        </div>
 
         <p id="modalDescription">
             Professional RR CLAN PRO service.
@@ -303,7 +301,8 @@ const paymentMethodHidden = document.getElementById("paymentMethodHidden");
 
 const serviceModal = document.getElementById("serviceModal");
 const closeModal = document.getElementById("closeModal");
-const modalIcon = document.getElementById("modalIcon");
+const modalImage = document.getElementById("modalImage");
+const modalServiceClan = document.getElementById("modalServiceClan");
 const modalServiceName = document.getElementById("modalServiceName");
 const modalServiceMeta = document.getElementById("modalServiceMeta");
 const modalDescription = document.getElementById("modalDescription");
@@ -351,7 +350,12 @@ function getServiceIcon(name) {
 function openServiceModal(card) {
     activeCard = card;
 
-    modalIcon.innerText = getServiceIcon(card.dataset.name);
+    const imageFile = card.dataset.image || "default.jpg";
+
+    modalImage.src = "/static/images/services/" + imageFile;
+    modalImage.alt = card.dataset.name;
+
+    modalServiceClan.innerText = card.dataset.clan || "RR CLAN PRO";
     modalServiceName.innerText = card.dataset.name;
     modalServiceMeta.innerText =
         "₹" + card.dataset.price + " + GST • " + card.dataset.duration;

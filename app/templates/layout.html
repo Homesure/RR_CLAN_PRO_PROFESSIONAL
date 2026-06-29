@@ -2,17 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
     <title>{{ title or "RR CLAN PRO" }}</title>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
 
 <nav class="navbar">
 
-    <div class="logo">
-        RR CLAN PRO
-    </div>
+    <a href="{{ url_for('index') }}" class="navbar-brand">
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="RR CLAN PRO Logo"
+            class="navbar-brand-logo"
+        >
+        <div>
+            <span class="brand-main">RR CLAN PRO</span>
+            <span class="brand-mini">PRO</span>
+        </div>
+    </a>
 
     <div class="nav-links">
 
@@ -30,6 +44,7 @@
             {% if current_user.role == 'admin' %}
                 <a href="{{ url_for('admin_dashboard') }}">Admin</a>
                 <a href="{{ url_for('admin_data') }}">Data Center</a>
+                <a href="{{ url_for('admin_support') }}">Support</a>
             {% endif %}
 
             {% if current_user.role == 'technician' %}
@@ -60,7 +75,7 @@
                     {% if current_user.role == 'admin' %}
                         <div class="notification-item">
                             <b>Admin Alerts</b>
-                            <p>New bookings and technician updates will appear here.</p>
+                            <p>New bookings, support tickets and technician updates will appear here.</p>
                         </div>
                     {% endif %}
 
@@ -104,9 +119,21 @@
 
 <footer class="footer">
     <div class="footer-grid">
+
         <div>
-            <h2>RR CLAN PRO</h2>
-            <p>Premium home and property service ecosystem for cleaning, repairs, technical work and property care.</p>
+            <div class="footer-logo-wrap">
+                <img
+                    src="{{ url_for('static', filename='images/logo.png') }}"
+                    alt="RR CLAN PRO Logo"
+                    class="footer-logo"
+                >
+                <h2>RR CLAN PRO</h2>
+            </div>
+
+            <p>
+                Premium home and property service ecosystem for cleaning,
+                repairs, technical work and property care.
+            </p>
         </div>
 
         <div>
@@ -120,10 +147,11 @@
             <h3>Quick Links</h3>
             <a href="{{ url_for('index') }}">Home</a>
             <a href="{{ url_for('services') }}">Services</a>
+
             {% if current_user.is_authenticated and current_user.role == "customer" %}
-            <a href="{{ url_for('book') }}">Book Service</a>
+                <a href="{{ url_for('book') }}">Book Service</a>
             {% else %}
-            <a href="{{ url_for('login') }}">Login to Book</a>
+                <a href="{{ url_for('login') }}">Login to Book</a>
             {% endif %}
         </div>
 
@@ -133,6 +161,7 @@
             <p>WhatsApp-first service support</p>
             <p>Available 7 days a week</p>
         </div>
+
     </div>
 
     <div class="footer-bottom">
@@ -147,7 +176,10 @@ const notificationDropdown = document.getElementById("notificationDropdown");
 if (notificationBell) {
     notificationBell.addEventListener("click", function(event) {
         event.stopPropagation();
-        notificationDropdown.classList.toggle("show");
+
+        if (notificationDropdown) {
+            notificationDropdown.classList.toggle("show");
+        }
     });
 }
 
@@ -159,5 +191,6 @@ document.addEventListener("click", function() {
 </script>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 </html>

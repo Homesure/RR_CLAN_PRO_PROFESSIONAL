@@ -63,6 +63,7 @@ class Service(db.Model):
 
     image = db.Column(
         db.String(255),
+        nullable=False,
         default="default.jpg"
     )
 

@@ -1111,7 +1111,7 @@ def register_routes(app):
 
         flash("Service deleted successfully.", "success")
         return redirect(url_for("admin_data"))
-
+    
     @app.route("/assign/<int:booking_id>", methods=["POST"])
     @login_required
     def assign_booking(booking_id):
@@ -1270,3 +1270,56 @@ def register_routes(app):
 
         flash("Thank you for rating this service.", "success")
         return redirect(url_for("customer_dashboard"))
+
+    @app.route("/admin/service/force-delete/<int:service_id>", methods=["POST"])
+    @login_required
+    def force_delete_service(service_id):
+        if current_user.role != "admin":
+            flash("Admin access only.", "error")
+            return redirect(url_for("index"))
+
+        service = Service.query.get_or_404(service_id)
+
+        Booking.query.filter_by(service_id=service.id).delete()
+
+        db.session.delete(service)
+        db.session.commit()
+
+        flash("Service deleted successfully.", "success")
+
+        return redirect(url_for("admin_data"))
+
+
+    @app.route("/admin/technician/force-delete/<int:technician_id>", methods=["POST"])
+    @login_required
+    def force_delete_technician(technician_id):
+        if current_user.role != "admin":
+            flash("Admin access only.", "error")
+            return redirect(url_for("index"))
+
+        technician = User.query.get_or_404(technician_id)
+
+        if technician.role != "technician":
+            flash("Only technicians can be deleted here.", "error")
+            return redirect(url_for("admin_data"))
+
+        Booking.query.filter_by(
+            technician_id=technician.id
+        ).update({
+            "technician_id": None,
+            "status": "Pending",
+            "notification_read": False,
+            "technician_notification": "No technician assigned yet",
+            "customer_notification": "Technician removed. Admin will assign another technician shortly."
+        })
+
+        db.session.delete(technician)
+        db.session.commit()
+
+        flash(
+            "Technician deleted and all assigned jobs moved back to Pending.",
+            "success"
+        )
+
+        return redirect(url_for("admin_data"))
+
