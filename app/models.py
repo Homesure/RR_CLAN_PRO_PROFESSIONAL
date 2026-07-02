@@ -39,6 +39,30 @@ class User(UserMixin, db.Model):
     )
 
 
+class Partner(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    business_name = db.Column(db.String(160), nullable=False)
+
+    owner_name = db.Column(db.String(120), nullable=False)
+
+    email = db.Column(db.String(160), unique=True, nullable=False)
+
+    phone = db.Column(db.String(20), unique=True, nullable=False)
+
+    category = db.Column(db.String(120), nullable=False)
+
+    service_area = db.Column(db.String(160), nullable=True)
+
+    address = db.Column(db.Text, nullable=True)
+
+    password_hash = db.Column(db.String(255), nullable=False)
+
+    status = db.Column(db.String(50), default="Pending")
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 

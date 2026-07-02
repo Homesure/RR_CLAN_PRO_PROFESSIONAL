@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="data-hero">
+    <p class="hero-tag">RR CLAN PRO PARTNER</p>
+    <h1>{{ partner.business_name }}</h1>
+    <p>Status: {{ partner.status }}</p>
+</section>
+
+<section class="data-center">
+    <div class="data-stats">
+        <div><span>Owner</span><h2>{{ partner.owner_name }}</h2></div>
+        <div><span>Category</span><h2>{{ partner.category }}</h2></div>
+        <div><span>Area</span><h2>{{ partner.service_area or "-" }}</h2></div>
+    </div>
+
+    <div class="admin-help-box">
+        Your partner portal is active. Leads and partner orders will appear here in the next upgrade.
+    </div>
+
+    <a href="{{ url_for('partner_logout') }}" class="small-btn danger-btn">Logout</a>
+</section>
+
+{% endblock %}

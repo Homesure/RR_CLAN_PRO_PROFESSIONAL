@@ -7,13 +7,14 @@ from flask import (
     request,
     make_response,
     current_app,
+    session,
 )
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from xhtml2pdf import pisa
 from io import BytesIO
 from app import db
-from app.models import User, Service, Booking, SupportTicket
+from app.models import User, Partner, Service, Booking, SupportTicket
 import random
 import razorpay
 
@@ -65,6 +66,104 @@ def register_routes(app):
             service_data[service.clan][service.category].append(service)
 
         return render_template("services.html", service_data=service_data)
+
+
+    # ---------------- PARTNER PORTAL ----------------
+
+    @app.route("/partner/register", methods=["GET", "POST"])
+    def partner_register():
+        if request.method == "POST":
+            business_name = (request.form.get("business_name") or "").strip()
+            owner_name = (request.form.get("owner_name") or "").strip()
+            email = (request.form.get("email") or "").lower().strip()
+            phone = (request.form.get("phone") or "").strip()
+            category = (request.form.get("category") or "").strip()
+            service_area = (request.form.get("service_area") or "").strip()
+            address = (request.form.get("address") or "").strip()
+            password = request.form.get("password") or ""
+
+            if not business_name or not owner_name or not email or not phone or not category or not password:
+                flash("All required partner fields are required.", "error")
+                return redirect(url_for("partner_register"))
+
+            existing_partner = Partner.query.filter(
+                (Partner.email == email) | (Partner.phone == phone)
+            ).first()
+
+            if existing_partner:
+                flash("Partner email or phone already registered.", "error")
+                return redirect(url_for("partner_login"))
+
+            partner = Partner(
+                business_name=business_name,
+                owner_name=owner_name,
+                email=email,
+                phone=phone,
+                category=category,
+                service_area=service_area,
+                address=address,
+                password_hash=generate_password_hash(password),
+                status="Pending"
+            )
+
+            db.session.add(partner)
+            db.session.commit()
+
+            flash("Partner application submitted. Admin approval is required.", "success")
+            return redirect(url_for("partner_login"))
+
+        return render_template("partner_register.html")
+
+
+    @app.route("/partner/login", methods=["GET", "POST"])
+    def partner_login():
+        if request.method == "POST":
+            email = (request.form.get("email") or "").lower().strip()
+            password = request.form.get("password") or ""
+
+            if not email or not password:
+                flash("Email and password are required.", "error")
+                return redirect(url_for("partner_login"))
+
+            partner = Partner.query.filter_by(email=email).first()
+
+            if not partner or not check_password_hash(partner.password_hash, password):
+                flash("Invalid partner email or password.", "error")
+                return redirect(url_for("partner_login"))
+
+            if partner.status != "Approved":
+                flash("Your partner account is awaiting admin approval.", "error")
+                return redirect(url_for("partner_login"))
+
+            session["partner_id"] = partner.id
+
+            flash("Partner logged in successfully.", "success")
+            return redirect(url_for("partner_dashboard"))
+
+        return render_template("partner_login.html")
+
+
+    @app.route("/partner/logout")
+    def partner_logout():
+        session.pop("partner_id", None)
+        flash("Partner logged out successfully.", "success")
+        return redirect(url_for("partner_login"))
+
+
+    @app.route("/partner/dashboard")
+    def partner_dashboard():
+        partner_id = session.get("partner_id")
+
+        if not partner_id:
+            flash("Please login as partner.", "error")
+            return redirect(url_for("partner_login"))
+
+        partner = Partner.query.get_or_404(partner_id)
+
+        return render_template(
+            "partner_dashboard.html",
+            partner=partner
+        )
 
     @app.route("/register", methods=["GET", "POST"])
     def register():
@@ -850,6 +949,7 @@ def register_routes(app):
         )
 
         open_tickets = SupportTicket.query.filter_by(status="Open").count()
+        pending_partners = Partner.query.filter_by(status="Pending").count()
 
         return render_template(
             "admin_dashboard.html",
@@ -859,7 +959,8 @@ def register_routes(app):
             customers_count=customers_count,
             referral_customers=referral_customers,
             repeat_customers=repeat_customers,
-            open_tickets=open_tickets
+            open_tickets=open_tickets,
+            pending_partners=pending_partners
         )
 
     @app.route("/admin/support")
@@ -877,6 +978,71 @@ def register_routes(app):
             "admin_support.html",
             tickets=tickets
         )
+
+
+    @app.route("/admin/partners")
+    @login_required
+    def admin_partners():
+        if current_user.role != "admin":
+            flash("Admin access only.", "error")
+            return redirect(url_for("index"))
+
+        partners = Partner.query.order_by(
+            Partner.created_at.desc()
+        ).all()
+
+        return render_template(
+            "admin_partners.html",
+            partners=partners
+        )
+
+
+    @app.route("/admin/partner/approve/<int:partner_id>", methods=["POST"])
+    @login_required
+    def approve_partner(partner_id):
+        if current_user.role != "admin":
+            flash("Admin access only.", "error")
+            return redirect(url_for("index"))
+
+        partner = Partner.query.get_or_404(partner_id)
+
+        partner.status = "Approved"
+        db.session.commit()
+
+        flash("Partner approved successfully.", "success")
+        return redirect(url_for("admin_partners"))
+
+
+    @app.route("/admin/partner/reject/<int:partner_id>", methods=["POST"])
+    @login_required
+    def reject_partner(partner_id):
+        if current_user.role != "admin":
+            flash("Admin access only.", "error")
+            return redirect(url_for("index"))
+
+        partner = Partner.query.get_or_404(partner_id)
+
+        partner.status = "Rejected"
+        db.session.commit()
+
+        flash("Partner rejected successfully.", "success")
+        return redirect(url_for("admin_partners"))
+
+
+    @app.route("/admin/partner/delete/<int:partner_id>", methods=["POST"])
+    @login_required
+    def delete_partner(partner_id):
+        if current_user.role != "admin":
+            flash("Admin access only.", "error")
+            return redirect(url_for("index"))
+
+        partner = Partner.query.get_or_404(partner_id)
+
+        db.session.delete(partner)
+        db.session.commit()
+
+        flash("Partner deleted successfully.", "success")
+        return redirect(url_for("admin_partners"))
 
     @app.route("/reply-ticket/<int:ticket_id>", methods=["POST"])
     @login_required
@@ -926,13 +1092,15 @@ def register_routes(app):
         technicians = User.query.filter_by(role="technician").all()
         services = Service.query.all()
         bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+        partners = Partner.query.order_by(Partner.created_at.desc()).all()
 
         return render_template(
             "admin_data.html",
             customers=customers,
             technicians=technicians,
             services=services,
-            bookings=bookings
+            bookings=bookings,
+            partners=partners
         )
 
     @app.route("/admin/customer/<int:customer_id>")

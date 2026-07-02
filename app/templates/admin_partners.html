@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="data-hero">
+    <p class="hero-tag">RR CLAN PRO ADMIN</p>
+    <h1>Partner Management</h1>
+    <p>Approve, reject and manage service partners.</p>
+</section>
+
+<section class="data-center">
+    <div class="data-table-wrap">
+        <table class="admin-table">
+            <tr>
+                <th>Business</th>
+                <th>Owner</th>
+                <th>Contact</th>
+                <th>Category</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+
+            {% for partner in partners %}
+            <tr>
+                <td>{{ partner.business_name }}</td>
+                <td>{{ partner.owner_name }}</td>
+                <td>{{ partner.email }}<br>{{ partner.phone }}</td>
+                <td>{{ partner.category }}</td>
+                <td>{{ partner.service_area or "-" }}</td>
+                <td>{{ partner.status }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('approve_partner', partner_id=partner.id) }}" style="display:inline;">
+                        <button class="small-btn" type="submit">Approve</button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('reject_partner', partner_id=partner.id) }}" style="display:inline;">
+                        <button class="small-btn danger-btn" type="submit">Reject</button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('delete_partner', partner_id=partner.id) }}" style="display:inline;">
+                        <button class="small-btn danger-btn" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</section>
+
+{% endblock %}

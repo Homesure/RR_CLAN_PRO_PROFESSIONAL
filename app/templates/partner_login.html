@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="auth-page">
+    <div class="auth-box">
+        <h1>Partner Login</h1>
+
+        <form method="POST">
+            <input type="email" name="email" placeholder="Partner Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <p>New partner? <a href="{{ url_for('partner_register') }}">Apply here</a></p>
+    </div>
+</section>
+
+{% endblock %}
